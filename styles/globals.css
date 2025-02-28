@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+}
+
+/* 纵向滚动条 */
+::-webkit-scrollbar {
+  width: 10px; /* 滚动条宽度 */
+}
+
+/* 滚动条轨道（背景部分） */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* 轨道颜色 */
+  border-radius: 10px;
+}
+
+/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {
+  background: #888; /* 滑块颜色 */
+  border-radius: 10px;
+}
+
+/* 悬停时的颜色 */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  height: 100%;
+  overflow: auto;
+}
+
+body {
+  font-family: "Arial", sans-serif;
+  background-repeat: no-repeat; /* 背景图不重复 */
+  background-size: cover; /* 背景图覆盖整个元素 */
+  background-position: center;
+  background-attachment: fixed; /* 背景图固定 */
+}
+
+.rotate-360 {
+  transform: rotate(360deg);
+}
+
+.rotate-360-reverse {
+  transform: rotate(-360deg);
+}
+
+.transition-transform {
+  transition: transform 0.5s ease;
+}
+
+.tag-sphere-container {
+  perspective: 1000px;
+}
+
+.tag-sphere {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-style: preserve-3d;
+}
+
+.tag {
+  display: block;
+  text-decoration: none;
+  font-weight: bold;
+  transition: transform 0.1s ease-out;
+}
+
+.top-rounded-image {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.gradient-bg {
+  background-image: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+}
+
+.layout-style {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1;
+  color: #4e5358;
+  padding: 20px;
+  transition: all 300ms;
+  cursor: pointer;
+}
+
+.button-style {
+  position: fixed;
+  right: 2%;
+  background: #c8c8c866;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.eyeicon-style {
+  font-size: 1.5rem; /* 通常 text-2xl 在 Tailwind 中是 1.5rem 大小，可按需调整 */
+  line-height: 2rem;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.flex-normal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
