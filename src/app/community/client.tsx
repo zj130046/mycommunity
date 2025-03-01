@@ -14,6 +14,7 @@ import { handleLoginSubmit, handleRegisterSubmit } from "../utils/page";
 import { Blog } from "../store/message";
 import { BiMessageDetail, BiLike } from "react-icons/bi";
 import { uploadFile } from "../utils/page";
+import { debounce } from "lodash";
 
 const MyEditor = lazy(() => import("@/app/components/editor"));
 const LoginModal = lazy(() => import("../components/LoginModal"));
@@ -52,7 +53,7 @@ export default function ClientComponent({
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = debounce(async () => {
     let imageUrl = img;
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     if (file) {
@@ -92,7 +93,7 @@ export default function ClientComponent({
     } else {
       alert(result.message);
     }
-  };
+  }, 500);
 
   const handleLike = async (id) => {
     try {

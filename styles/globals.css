@@ -111,7 +111,7 @@ body {
     display: none;
   }
   .carousel {
-    height: 400px;
+    width: 100%;
   }
   .article {
     width: 100%;
@@ -148,7 +148,6 @@ body {
   }
   .carousel {
     width: 1150px;
-    height: 400px;
   }
   .about {
     width: 1150px;

@@ -10,6 +10,7 @@ import { RiEmotionLine } from "react-icons/ri";
 import useUserStore from "../store/userStore";
 import { $getRoot, $getSelection, $isRangeSelection } from "lexical";
 import { emojiList } from "../store/message";
+import { debounce } from "lodash";
 
 const EmojiButton = () => {
   const [editor] = useLexicalComposerContext();
@@ -58,7 +59,7 @@ export default function CommentEditor({ onCommentSubmit }) {
     content: editorContent,
   };
 
-  const submit = async () => {
+  const submit = debounce(async () => {
     try {
       const response = await fetch("/api/comments/user", {
         method: "POST",
@@ -77,7 +78,7 @@ export default function CommentEditor({ onCommentSubmit }) {
     } catch (error) {
       console.error(error);
     }
-  };
+  }, 500);
 
   return (
     <LexicalComposer

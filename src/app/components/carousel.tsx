@@ -61,7 +61,7 @@ export default function Carousel() {
 
   return (
     <div className="relative mb-[40px] carousel">
-      <div className="h-full relative overflow-hidden">
+      <div className="h-full overflow-hidden">
         <div
           className="flex transition-transform duration-500 ease-in-out"
           style={{
@@ -71,25 +71,38 @@ export default function Carousel() {
           {articlesLatest.map((article) => (
             <div
               key={article.id}
-              className="w-full h-full flex-shrink-0 relative "
+              className="w-full h-[400px] flex-shrink-0 relative"
             >
-              <Link href={`/article/${article.slug}`}>
-                <div className="w-full h-full">
-                  <Image
-                    width={1150}
-                    height={400}
-                    src={article.img}
-                    alt={article.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute top-0 mt-4 ml-4">
-                    <h4 className="text-white text-[30px]">{article.title}</h4>
-                  </div>
-                </div>
+              <Link href={`/article/${article.slug}`} className="w-full h-full">
+                <Image
+                  width={1150}
+                  height={400}
+                  src={article.img}
+                  alt={article.title}
+                  className="w-full h-full object-cover"
+                />
               </Link>
+              <div className="absolute top-0 mt-4 ml-4">
+                <h4 className="text-white text-[30px]">{article.title}</h4>
+              </div>
             </div>
           ))}
         </div>
+      </div>
+      <div className="absolute inset-0 flex justify-center items-end px-4">
+        <ul className="flex gap-2 mb-4">
+          {articlesLatest.map((_, index) => (
+            <li
+              key={index}
+              className={`rounded-full ${
+                activeIndex === index ? "bg-yellow-500" : "bg-white"
+              } w-2 h-2`}
+              onClick={() => {
+                setActiveIndex(index);
+              }}
+            ></li>
+          ))}
+        </ul>
       </div>
       <div className="absolute inset-0 flex items-center justify-between px-4">
         <button

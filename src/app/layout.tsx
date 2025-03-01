@@ -15,7 +15,7 @@ import useUserStore from "./store/userStore";
 import { Button, useDisclosure, Input } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { handleLoginSubmit, handleRegisterSubmit } from "./utils/page";
-// import debounce from "lodash/debounce";
+import debounce from "lodash/debounce";
 import Head from "next/head";
 
 const LoginModal = lazy(() => import("./components/LoginModal"));
@@ -49,15 +49,14 @@ export default function RootLayout({
     setDarkMode((prevMode) => !prevMode);
   };
 
-  const handleSearch = async () => {
+  const handleSearch = debounce(async () => {
     if (keyword.length === 0) {
       return;
     }
     router.push(`/search/${keyword}`);
-    fetchResults(keyword).then(() => {
-      setKeyword("");
-    });
-  };
+    await fetchResults(keyword);
+    setKeyword("");
+  }, 500);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -115,7 +114,10 @@ export default function RootLayout({
             <Input
               autoComplete="off"
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onChange={(e) => {
+                setKeyword(e.target.value);
+                handleSearch();
+              }}
               endContent={
                 <IoIosSearch
                   className="cursor-pointer text-2xl text-default-400 flex-shrink-0"
