@@ -2,7 +2,12 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 interface UserState {
-  user: { username?: string; userId?: number; avatarUrl?: string } | null;
+  user: {
+    username?: string;
+    userId?: number;
+    avatarUrl?: string;
+    is_author?: string;
+  } | null;
   token: string | null;
   login: (userData: {
     username?: string;

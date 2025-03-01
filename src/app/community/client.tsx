@@ -54,8 +54,12 @@ export default function ClientComponent({
 
   const handleSubmit = async () => {
     let imageUrl = img;
-
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        alert("文件大小不能超过 5MB，请选择更小的文件。");
+        return;
+      }
       imageUrl = await uploadFile(file);
       if (!imageUrl) return;
     }
@@ -197,8 +201,8 @@ export default function ClientComponent({
   );
 
   return (
-    <>
-      <Card className=" w-[100px] h-[300px] shadow-lg dark:bg-gray-900  flex-col flex-normal"></Card>
+    <div className=" community-content ">
+      <Card className="left w-[100px] h-[300px] shadow-lg dark:bg-gray-900"></Card>
       <div className="w-[730px]">
         {user?.username ? loggedInCard : loginCard}
         {blogs.map((blog, index) => (
@@ -226,7 +230,7 @@ export default function ClientComponent({
               </div>
               <Link
                 href={`/blog/${blog.slug}`}
-                className="pl-14 pr-14 pb-2"
+                className="px-14 pb-2"
                 dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(
                     blog.content.length > 400
@@ -236,7 +240,7 @@ export default function ClientComponent({
                 }}
               ></Link>
 
-              <div className="w-full max-h-[180px] mb-[10px] pr-14 pl-14">
+              <div className="w-full max-h-[180px] mb-[10px] px-14">
                 {blog.img ? (
                   <Image
                     src={blog.img}
@@ -282,28 +286,26 @@ export default function ClientComponent({
         />
       </Suspense>
 
-      <div className="flex flex-col ">
-        <Card className="w-[280px] shadow-lg h-[300px] mb-[20px] dark:bg-gray-900 p-[22px]">
-          <div className="flex flex-col items-center">
-            <div className="w-[100px] h-[100px] relative m-auto mb-[20px]">
-              <Image
-                src="/assets/22.jpg"
-                alt="示例图片"
-                width={100}
-                height={100}
-                className="w-[100px] h-[100px]"
-              />
-            </div>
-            <p className="mb-[10px] text-[16px] ">博客投稿</p>
-            <p className="mb-[20px] text-[12.6px] text-[#999999]">
-              这里投稿您的文章,将会展示在博客首页
-            </p>
-            <Button color="success" onClick={() => router.push("/blog")}>
-              发布文章
-            </Button>
+      <Card className="flex flex-col navmedia w-[280px] shadow-lg h-[300px] mb-[20px] dark:bg-gray-900 p-[22px]">
+        <div className="flex flex-col items-center">
+          <div className="w-[100px] h-[100px] relative m-auto mb-[20px]">
+            <Image
+              src="/assets/22.jpg"
+              alt="示例图片"
+              width={100}
+              height={100}
+              className="w-[100px] h-[100px]"
+            />
           </div>
-        </Card>
-      </div>
-    </>
+          <p className="mb-[10px] text-[16px] ">博客投稿</p>
+          <p className="mb-[20px] text-[12.6px] text-[#999999]">
+            这里投稿您的文章,将会展示在博客首页
+          </p>
+          <Button color="success" onClick={() => router.push("/blog")}>
+            发布文章
+          </Button>
+        </div>
+      </Card>
+    </div>
   );
 }

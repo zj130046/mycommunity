@@ -12,10 +12,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const isAllSelected = pathname === "/category" || pathname === "/";
 
   return (
-    <div className="w-[1150px] m-auto">
+    <div className="m-auto w-full max-w-[1150px] flex flex-col justify-center">
       <Carousel />
       <div className="w-full flex justify-between">
-        <div className="flex flex-col max-w-[840px]">
+        <div className="flex flex-col w-full article">
           <Card className="shadow-lg dark:bg-gray-900 mb-[20px]">
             <ul className="h-[40px] p-[4px] flex justify-between items-center bg-[#F4F4F5]">
               {navItems.map((item, index) =>
@@ -23,14 +23,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                 (item.label === "全部" && isAllSelected) ? (
                   <li
                     key={index}
-                    className="text-[#fff] text-[14px] bg-[#F31260] pt-[4px] pb-[4px] pl-[12px] pr-[12px] rounded-xl"
+                    className="text-[#fff] text-[14px] bg-[#F31260] pt-[4px] pb-[4px] px-[12px] rounded-xl"
                   >
                     <Link href={item.href}>{item.label}</Link>
                   </li>
                 ) : (
                   <li
                     key={index}
-                    className="text-[#71717A] text-[14px] pt-[4px] pb-[4px] pl-[12px] pr-[12px]"
+                    className="text-[#71717A] text-[14px] pt-[4px] pb-[4px] px-[12px]"
                   >
                     <Link href={item.href}>{item.label}</Link>
                   </li>

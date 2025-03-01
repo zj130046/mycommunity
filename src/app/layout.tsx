@@ -15,7 +15,7 @@ import useUserStore from "./store/userStore";
 import { Button, useDisclosure, Input } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { handleLoginSubmit, handleRegisterSubmit } from "./utils/page";
-import debounce from "lodash/debounce";
+// import debounce from "lodash/debounce";
 import Head from "next/head";
 
 const LoginModal = lazy(() => import("./components/LoginModal"));
@@ -59,10 +59,6 @@ export default function RootLayout({
     });
   };
 
-  const handleKeywordChange = debounce((e) => {
-    setKeyword(e.target.value);
-  }, 300);
-
   useEffect(() => {
     if (typeof window !== "undefined") {
       document.documentElement.setAttribute(
@@ -71,9 +67,11 @@ export default function RootLayout({
       );
       const bodyElement = document.body;
       if (darkMode) {
-        bodyElement.style.backgroundImage = 'url("/assets/29.png")';
+        bodyElement.style.backgroundImage =
+          'url("https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1740742258091-29-vpkdTPOfChn387WPoUKQI6Q2cq3Wi4.png")';
       } else {
-        bodyElement.style.backgroundImage = 'url("/assets/7.png")';
+        bodyElement.style.backgroundImage =
+          'url("https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1740743169056-33-f95LeDXuMCInd3j2GUDikDVS8SKnSr.jpg")';
       }
     }
   }, [darkMode]);
@@ -85,8 +83,8 @@ export default function RootLayout({
         <title>悠哉社区</title>
       </Head>
       <body className="transition-colors duration-[1000ms] bg-white text-black dark:bg-gray-900 dark:text-white">
-        <nav className="bg-[white] sticky top-0 flex justify-center h-[67px] dark:bg-gray-900 dark:text-white z-50">
-          <div className="flex-normal mr-[100px]">
+        <nav className="w-full bg-[white] sticky px-20 top-0 flex justify-around h-[67px] dark:bg-gray-900 dark:text-white z-50">
+          <div className="flex-normal">
             <Image
               src="/assets/image.png"
               alt="示例图片"
@@ -95,7 +93,7 @@ export default function RootLayout({
               className="w-[85px] h-[40px]"
             />
           </div>
-          <ul className="flex cursor-pointer mr-[260px]">
+          <ul className="flex cursor-pointer navmedia">
             <li className=" hover:text-pink-500 layout-style">
               <HiOutlineHome />
               <Link href="/">首页</Link>
@@ -108,27 +106,31 @@ export default function RootLayout({
               <BiLabel />
               <Link href="/comment">留言板</Link>
             </li>
-            <li className=" hover:text-pink-500 layout-style mr-[60px]">
+            <li className=" hover:text-pink-500 layout-style">
               <AiOutlineUser />
               <Link href="/about">关于</Link>
             </li>
-            <li className=" hover:text-pink-500 layout-style">
-              <Input
-                autoComplete="off"
-                value={keyword}
-                onChange={handleKeywordChange}
-                endContent={
-                  <IoIosSearch
-                    className="cursor-pointer text-2xl text-default-400 flex-shrink-0"
-                    onClick={handleSearch}
-                  />
-                }
-              />
-            </li>
           </ul>
-          <ul className="flex gap-2">
+          <li className=" hover:text-pink-500 layout-style minmedia">
+            <Input
+              autoComplete="off"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              endContent={
+                <IoIosSearch
+                  className="cursor-pointer text-2xl text-default-400 flex-shrink-0"
+                  onClick={handleSearch}
+                />
+              }
+            />
+          </li>
+          <ul className="flex items-center gap-2 usermedia">
             {token ? (
-              <Suspense fallback={LoadingFallback}>
+              <Suspense
+                fallback={
+                  <div className="w-[45px] h-[45px] rounded-full flex-normal bg-gray-100 animate-pulse"></div>
+                }
+              >
                 <CustomDropdown />
               </Suspense>
             ) : (

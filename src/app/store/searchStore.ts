@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 interface SearchState {
-  searchResults: any[];
+  searchResults: [];
   fetchResults: (keyword: string) => Promise<void>;
 }
 

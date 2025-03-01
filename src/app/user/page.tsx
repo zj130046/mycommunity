@@ -24,7 +24,7 @@ import DOMPurify from "dompurify";
 import { BiLike } from "react-icons/bi";
 import { EyeSlashFilledIcon, EyeFilledIcon } from "@/app/store/message";
 
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 export default function About() {
   const { user, token } = useUserStore();
@@ -56,7 +56,7 @@ export default function About() {
   const handleAvatarChange = async () => {
     if (!newAvatar) return;
     if (newAvatar.size > MAX_FILE_SIZE) {
-      console.error("文件大小超过限制，最大允许10MB");
+      alert("文件大小超过限制，最大允许5MB");
       return;
     }
 
@@ -90,8 +90,8 @@ export default function About() {
       if (data.avatarUrl) {
         useUserStore.setState({ user: { ...user, avatarUrl: data.avatarUrl } });
       }
-    } catch (error: any) {
-      console.error("更新头像时出错:", error.message);
+    } catch (error) {
+      console.error("更新头像时出错:", error);
     } finally {
       setIsLoading(false);
     }

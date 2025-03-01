@@ -49,12 +49,18 @@ export default function About() {
 
   const handleSubmit = async () => {
     let imageUrl = img;
-    // 如果用户上传了新文件，则上传文件并获取新的 URL
+
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
     if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        alert("文件大小不能超过 5MB，请选择更小的文件。");
+        return;
+      }
       imageUrl = await uploadFile(file);
       if (!imageUrl) return;
     }
-    // 如果既没有新文件，也没有已有图片 URL，提示用户选择文件
+
     if (!imageUrl) {
       alert("请选择图片");
       return;
@@ -63,7 +69,7 @@ export default function About() {
       console.error("未找到 JWT，请重新登录");
       return;
     }
-    // 提交数据
+
     const data = { title, excerpt, content, category, tag, img: imageUrl };
     const response = await fetch("/api/articles/submit", {
       method: "POST",
@@ -114,11 +120,16 @@ export default function About() {
 
   const handleDraft = async () => {
     let imageUrl = img; // 使用当前图片 URL
-    if (file) {
-      imageUrl = await uploadFile(file);
-      if (!imageUrl) return; // 如果上传失败，直接返回
-    }
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
+    if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        alert("文件大小不能超过 5MB，请选择更小的文件。");
+        return;
+      }
+      imageUrl = await uploadFile(file);
+      if (!imageUrl) return;
+    }
     if (!token) {
       console.error("未找到 JWT，请重新登录");
       return;
@@ -227,42 +238,41 @@ export default function About() {
     </Card>
   );
 
-  const fetchDraft = async () => {
-    try {
-      if (!token) {
-        console.error("未找到 JWT，请重新登录");
-        return;
-      }
-      const response = await fetch("/api/articles/draft", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const result = await response.json();
-      if (response.ok) {
-        setTitle(result.title);
-        setExcerpt(result.excerpt);
-        setContent(result.content);
-        setCategory(result.category);
-        setTag(result.tag);
-        setImg(result.img);
-      }
-    } catch (error) {
-      console.error("获取草稿出错:", error);
-    }
-  };
-
   useEffect(() => {
+    const fetchDraft = async () => {
+      try {
+        if (!token) {
+          console.error("未找到 JWT，请重新登录");
+          return;
+        }
+        const response = await fetch("/api/articles/draft", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const result = await response.json();
+        if (response.ok) {
+          setTitle(result.title);
+          setExcerpt(result.excerpt);
+          setContent(result.content);
+          setCategory(result.category);
+          setTag(result.tag);
+          setImg(result.img);
+        }
+      } catch (error) {
+        console.error("获取草稿出错:", error);
+      }
+    };
+
     if (user?.username && !isSubmitted) {
-      // 如果文章未提交，才获取草稿
       fetchDraft();
     }
-  }, [user?.username, isSubmitted]);
+  }, [user?.username, isSubmitted, token]);
 
   return (
-    <div className="flex max-w-[1150px] m-auto justify-between">
+    <div className="about-content">
       {user?.username ? loggedInCard : loginCard}
       <Suspense fallback="<div>Load...</div>">
         <LoginModal
@@ -282,7 +292,7 @@ export default function About() {
         />
       </Suspense>
 
-      <Card className="w-[280px] text-[14px] h-[290px] p-[20px]">
+      <Card className="w-[280px] text-[14px] h-[290px] p-[20px] right-card">
         <div className="mb-[14px]">
           <Select
             className="max-w-xs"

@@ -12,12 +12,10 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "my-blob-store.public.blob.vercel-storage.com",
-        port: "",
-      },
+    domains: [
+      "irc7idfkyhk1igoi.public.blob.vercel-storage.com",
+      "example.com",
+      "anotherdomain.com",
     ],
   },
 };

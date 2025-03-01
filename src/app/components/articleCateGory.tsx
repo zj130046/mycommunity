@@ -6,8 +6,9 @@ import dayjs from "dayjs";
 import { LuToyBrick } from "react-icons/lu";
 import { PiNoteThin, PiTag } from "react-icons/pi";
 import { TbChevronRight, TbChevronsRight, TbChevronLeft } from "react-icons/tb";
-import { Image, Card } from "@heroui/react";
+import { Card } from "@heroui/react";
 import { Article } from "@/app/store/message";
+import Image from "next/image";
 
 interface ClientComponentProps {
   initialArticles: Article[];
@@ -17,7 +18,7 @@ export default function ClientComponent({
   initialArticles,
 }: ClientComponentProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [catelist, setCateList] = useState<Article[]>(initialArticles);
+  const [catelist] = useState<Article[]>(initialArticles);
   const pageSize = 5;
   const totalPage = useMemo(
     () => Math.ceil(catelist.length / pageSize),
@@ -32,8 +33,9 @@ export default function ClientComponent({
     () => catelist.slice(indexFirst, indexLast),
     [catelist, indexFirst, indexLast]
   );
+
   return (
-    <div className="flex max-w-[840px] m-auto items-start justify-between">
+    <div className="flex w-full m-auto items-start justify-between article">
       <div>
         {currentList.map((article, index) => (
           <Card
@@ -43,16 +45,15 @@ export default function ClientComponent({
             <div className="flex justify-center flex-col">
               <div className="w-full h-[180px] mb-[10px]">
                 <Image
-                  isZoomed
                   src={article.img}
                   alt="示例图片"
-                  width={900}
+                  width={840}
                   height={180}
-                  className="w-full h-full"
+                  className="w-full h-full object-cover"
                 />
               </div>
 
-              <div className="pl-[25px] pr-[25px]">
+              <div className="px-[25px]">
                 <p className="text-center text-[25px] text-[#00DDDD]">
                   <Link href={`/article/${article.slug}`}>{article.title}</Link>
                 </p>

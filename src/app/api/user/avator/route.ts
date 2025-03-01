@@ -10,8 +10,6 @@ if (!JWT_SECRET) {
   throw new Error("JWT_SECRET 环境变量未设置");
 }
 
-const MAX_SIZE = 5 * 1024 * 1024; // 限制上传文件最大为 5MB
-
 export async function POST(request: NextRequest) {
   try {
     // 从 Authorization 头部获取 JWT 令牌
@@ -40,14 +38,6 @@ export async function POST(request: NextRequest) {
     if (!allowedMimeTypes.includes(avatar.type)) {
       return NextResponse.json(
         { message: "只允许上传 JPG, PNG 或 GIF 格式的图片" },
-        { status: 400 }
-      );
-    }
-
-    // 文件大小验证
-    if (avatar.size > MAX_SIZE) {
-      return NextResponse.json(
-        { message: "文件大小不能超过 5MB" },
         { status: 400 }
       );
     }

@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState, lazy, Suspense } from "react";
 import DOMPurify from "dompurify";
-import { CircularProgress, Card } from "@heroui/react";
+import { Card } from "@heroui/react";
 import { Image } from "@heroui/react";
 import dayjs from "dayjs";
 import { Blog } from "@/app/store/message";
@@ -38,7 +38,12 @@ const BlogDetails = () => {
   }, [slug]);
 
   if (!blog) {
-    return <CircularProgress aria-label="Loading..." />;
+    return (
+      <div className="flex w-full max-w-[1040px] m-auto items-start justify-between">
+        <Card className="bg-gray-100 animate-pulse w-full max-w-[730px] shadow-lg dark:bg-gray-900"></Card>
+        <Card className="bg-gray-100 animate-pulse w-[280px] shadow-lg h-[300px] dark:bg-gray-900"></Card>
+      </div>
+    );
   }
 
   return (
@@ -65,12 +70,12 @@ const BlogDetails = () => {
                 </div>
               </div>
               <div
-                className="pl-14 pr-14 pb-2"
+                className="px-14 pb-2"
                 dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(blog.content),
                 }}
               ></div>
-              <div className="w-full max-h-[180px] mb-[10px] pr-14 pl-14">
+              <div className="w-full max-h-[180px] mb-[10px] px-14">
                 {blog.img ? (
                   <Image
                     src={blog.img}
@@ -99,7 +104,11 @@ const BlogDetails = () => {
           </div>
         </Card>
       </div>
-      <Suspense fallback="<div>Loading...</div>">
+      <Suspense
+        fallback={
+          <Card className="bg-gray-100 animate-pulse w-[280px] shadow-lg h-[300px] dark:bg-gray-900"></Card>
+        }
+      >
         <MessageCard />
       </Suspense>
     </div>

@@ -51,7 +51,7 @@ export default function ClientComponent({
     fetchComments();
   }, []);
 
-  const handleLike = async (commentId) => {
+  const handleLike = async (commentId: number) => {
     const res = await fetch(`/api/comments/like/${commentId}`, {
       method: "POST",
     });

@@ -72,7 +72,7 @@ export default function RightCard() {
   }, [index, isRemoving, text]);
 
   return (
-    <div>
+    <div className="right-card">
       <Suspense fallback="<div>Loading...</div>">
         <MessageCard />
       </Suspense>
@@ -153,7 +153,7 @@ export default function RightCard() {
                     <p className="ml-[5px] text-[14px] text-[#262626] mr-[4px]">
                       {comment.username}
                     </p>
-                    <p className="text-[10px] bg-[red] text-[#FFFFFF] rounded-[2px] pr-[1px] pl-[1px]">
+                    <p className="text-[10px] bg-[red] text-[#FFFFFF] rounded-[2px] px-[1px]">
                       {user?.is_author ? "作者" : "游客"}
                     </p>
                   </div>

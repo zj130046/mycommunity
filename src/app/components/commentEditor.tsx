@@ -102,7 +102,7 @@ export default function CommentEditor({ onCommentSubmit }) {
         </Button>
       </div>
 
-      <EditorChangeListener onChange={setEditorContent} />
+      <EditorChangeListener onChange={(e) => setEditorContent(e)} />
     </LexicalComposer>
   );
 }

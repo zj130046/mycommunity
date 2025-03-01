@@ -119,7 +119,7 @@ export async function DELETE(request: Request): Promise<Response> {
        WHERE user_id = $1 AND is_published = false;`,
       [userId]
     );
-
+    console.log(result);
     return new NextResponse(JSON.stringify({ message: "草稿删除成功" }), {
       status: 200,
     });

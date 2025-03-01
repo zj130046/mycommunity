@@ -49,39 +49,11 @@ body {
   background-attachment: fixed; /* 背景图固定 */
 }
 
-.rotate-360 {
-  transform: rotate(360deg);
-}
-
-.rotate-360-reverse {
-  transform: rotate(-360deg);
-}
-
-.transition-transform {
-  transition: transform 0.5s ease;
-}
-
-.tag-sphere-container {
-  perspective: 1000px;
-}
-
-.tag-sphere {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-style: preserve-3d;
-}
-
 .tag {
   display: block;
   text-decoration: none;
   font-weight: bold;
   transition: transform 0.1s ease-out;
-}
-
-.top-rounded-image {
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
 }
 
 .gradient-bg {
@@ -113,7 +85,7 @@ body {
 }
 
 .eyeicon-style {
-  font-size: 1.5rem; /* 通常 text-2xl 在 Tailwind 中是 1.5rem 大小，可按需调整 */
+  font-size: 1.5rem;
   line-height: 2rem;
   color: #9ca3af;
   pointer-events: none;
@@ -123,4 +95,115 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.active {
+  width: 14px;
+  height: 14px;
+  background-color: orange;
+  border: 2px solid orange;
+  transition: all 0.78s;
+  border-radius: 50%;
+}
+
+@media screen and (max-width: 1150px) {
+  .right-card {
+    display: none;
+  }
+  .carousel {
+    height: 400px;
+  }
+  .article {
+    width: 100%;
+    min-width: 300px;
+  }
+  .community-content {
+    display: flex;
+    width: 850px;
+    margin: auto;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+@media screen and (min-width: 1150px) {
+  .about-content {
+    display: flex;
+    width: 1150px;
+    margin: auto;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .community-content {
+    display: flex;
+    width: 1150px;
+    margin: auto;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .article {
+    width: 840px;
+  }
+  .carousel {
+    width: 1150px;
+    height: 400px;
+  }
+  .about {
+    width: 1150px;
+  }
+  .card {
+    width: 840px;
+  }
+}
+
+@media screen and (max-width: 1130px) {
+  .about {
+    width: 100%;
+  }
+  .about-content {
+    display: flex;
+    width: 100%;
+    margin: auto;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+@media screen and (max-width: 840px) {
+  .about {
+    width: 100%;
+  }
+  .community-content {
+    display: flex;
+    width: 740px;
+    margin: auto;
+  }
+  .left {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 1110px) {
+  .navmedia {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 750px) {
+  .usermedia {
+    display: none;
+  }
+  .community-content {
+    display: flex;
+    width: 100%;
+    margin: auto;
+  }
+}
+
+@media screen and (max-width: 550px) {
+  .minmedia {
+    display: none;
+  }
 }

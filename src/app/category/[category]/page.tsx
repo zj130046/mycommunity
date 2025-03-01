@@ -1,11 +1,12 @@
 import ClientComponent from "../../components/articleCateGory";
+import { Article } from "@/app/store/message";
 
 export async function generateStaticParams() {
   try {
     const res = await fetch("http://localhost:3000/api/articles/all");
     const data = await res.json();
-    const articles = data.articles.map((article) => article.category);
-    return articles.map((article) => ({ article }));
+    const articles = data.articles.map((article: Article) => article.category);
+    return articles.map((article: Article) => ({ article }));
   } catch (error) {
     console.log(error);
   }

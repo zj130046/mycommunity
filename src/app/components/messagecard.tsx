@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Image, useDisclosure, Button, Tooltip, Card } from "@heroui/react";
 import LoginModal from "./LoginModal";
 import RegisterModal from "./RegisterModal";
@@ -23,9 +22,6 @@ export default function MessageCard() {
     onOpen: onRegisterOpen,
     onOpenChange: onRegisterOpenChange,
   } = useDisclosure();
-  const [isRotatingForward, setIsRotatingForward] = useState(false);
-  const handleMouseEnter = () => setIsRotatingForward(true);
-  const handleMouseLeave = () => setIsRotatingForward(false);
   const { user, login } = useUserStore();
 
   const loginCard = (
@@ -37,11 +33,7 @@ export default function MessageCard() {
             alt="示例图片"
             width={80}
             height={80}
-            className={`rounded-full transition-transform duration-500 ${
-              isRotatingForward ? "rotate-360" : "rotate-360-reverse"
-            }`}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+            className="rounded-full"
           />
         </div>
         <p className="mb-[20px]">你好！ 请登录</p>
@@ -84,11 +76,7 @@ export default function MessageCard() {
               alt="示例图片"
               width={80}
               height={80}
-              className={`rounded-full transition-transform duration-500 ${
-                isRotatingForward ? "rotate-360" : "rotate-360-reverse"
-              }`}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
+              className="rounded-full"
             />
           ) : (
             <Image
@@ -96,11 +84,7 @@ export default function MessageCard() {
               alt="示例图片"
               width={80}
               height={80}
-              className={`rounded-full transition-transform duration-500 ${
-                isRotatingForward ? "rotate-360" : "rotate-360-reverse"
-              }`}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
+              className="rounded-full"
             />
           )}
         </div>

@@ -10,13 +10,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "未上传文件" }, { status: 400 });
     }
 
-    const MAX_SIZE = 5 * 1024 * 1024;
-    if (file.size > MAX_SIZE) {
-      return NextResponse.json(
-        { message: "文件大小不能超过 5MB" },
-        { status: 400 }
-      );
-    }
+    // 使用 Vercel Blob 上传文件
     const blob = await put(`uploads/${Date.now()}-${file.name}`, file, {
       access: "public", // 设置公开访问
       contentType: file.type, // 保留原始 MIME 类型

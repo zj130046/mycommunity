@@ -71,6 +71,7 @@ interface User {
   id: number;
   username: string;
   avatar_url: string;
+  is_author: string;
 }
 
 export interface SearchResults {

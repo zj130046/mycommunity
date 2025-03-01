@@ -29,14 +29,12 @@ const Dropdown = () => {
   const handleMouseLeave = () => {
     setIsOpen(false);
   };
-
-  // 使用 useDisclosure 来管理模态框的显示状态
   const { isOpen: isModalOpen, onOpen, onClose } = useDisclosure();
 
   const handleLogoutConfirm = () => {
     logout();
     onClose();
-    setIsOpen(false); // 关闭下拉菜单
+    setIsOpen(false);
   };
 
   const targetRef = React.useRef(null);
@@ -91,7 +89,6 @@ const Dropdown = () => {
         )}
       </div>
 
-      {/* 模态框 */}
       <Modal ref={targetRef} isOpen={isModalOpen} onOpenChange={onClose}>
         <ModalContent>
           {(onCloseModal) => (

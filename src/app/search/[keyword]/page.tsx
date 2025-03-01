@@ -71,7 +71,7 @@ const SearchDetails = () => {
                       </div>
                       <Link
                         href={`/blog/${blog.slug}`}
-                        className="pl-14 pr-14 pb-2"
+                        className="px-14 pb-2"
                         dangerouslySetInnerHTML={{
                           __html: DOMPurify.sanitize(
                             blog.content.length > 400
@@ -80,7 +80,7 @@ const SearchDetails = () => {
                           ),
                         }}
                       ></Link>
-                      <div className="w-full max-h-[180px] mb-[10px] pr-14 pl-14">
+                      <div className="w-full max-h-[180px] mb-[10px] px-14">
                         {blog.img ? (
                           <Image
                             src={blog.img}
