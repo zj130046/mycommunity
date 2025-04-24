@@ -15,8 +15,8 @@ import useUserStore from "./store/userStore";
 import { Button, useDisclosure, Input } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { handleLoginSubmit, handleRegisterSubmit } from "./utils/page";
-import debounce from "lodash/debounce";
 import Head from "next/head";
+import useDebounce from "./hooks/useDebounce";
 
 const LoginModal = lazy(() => import("./components/LoginModal"));
 const RegisterModal = lazy(() => import("./components/RegisterModal"));
@@ -49,14 +49,16 @@ export default function RootLayout({
     setDarkMode((prevMode) => !prevMode);
   };
 
-  const handleSearch = debounce(async () => {
+  const handleSearch = async () => {
     if (keyword.length === 0) {
       return;
     }
     router.push(`/search/${keyword}`);
     await fetchResults(keyword);
     setKeyword("");
-  }, 500);
+  };
+
+  const debouncedHandleSearch = useDebounce(handleSearch, 500);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -116,12 +118,12 @@ export default function RootLayout({
               value={keyword}
               onChange={(e) => {
                 setKeyword(e.target.value);
-                handleSearch();
+                debouncedHandleSearch();
               }}
               endContent={
                 <IoIosSearch
                   className="cursor-pointer text-2xl text-default-400 flex-shrink-0"
-                  onClick={handleSearch}
+                  onClick={debouncedHandleSearch}
                 />
               }
             />

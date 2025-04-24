@@ -1,11 +1,11 @@
 export const handleLoginSubmit = async (e, login, onLoginOpenChange) => {
+  console.log(e);
   e.preventDefault();
   const form = e.target;
-  const formData = new FormData(form);
-  const formDataObj = {};
-  formData.forEach((value, key) => {
-    formDataObj[key] = value;
-  });
+  // 直接从表单元素中获取数据
+  const username = form.querySelector('input[name="username"]')?.value;
+  const password = form.querySelector('input[name="password"]')?.value;
+  const Data = { username, password };
 
   try {
     const response = await fetch("/api/user/login", {
@@ -13,7 +13,7 @@ export const handleLoginSubmit = async (e, login, onLoginOpenChange) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(formDataObj),
+      body: JSON.stringify(Data),
     });
 
     const data = await response.json();
@@ -32,11 +32,11 @@ export const handleLoginSubmit = async (e, login, onLoginOpenChange) => {
 export const handleRegisterSubmit = async (e, onRegisterOpenChange) => {
   e.preventDefault();
   const form = e.target;
-  const formData = new FormData(form);
-  const formDataObj = {};
-  formData.forEach((value, key) => {
-    formDataObj[key] = value;
-  });
+  // 直接从表单元素中获取数据
+  const username = form.querySelector('input[name="username"]')?.value;
+  const password = form.querySelector('input[name="password"]')?.value;
+  const repassword = form.querySelector('input[name="repassword"]')?.value;
+  const Data = { username, password, repassword };
 
   try {
     const response = await fetch("/api/user/register", {
@@ -44,7 +44,7 @@ export const handleRegisterSubmit = async (e, onRegisterOpenChange) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(formDataObj),
+      body: JSON.stringify(Data),
     });
 
     const data = await response.json();

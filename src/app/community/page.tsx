@@ -2,9 +2,7 @@ import ClientComponent from "./client";
 import Head from "next/head";
 
 const fetchBlogs = async () => {
-  const res = await fetch("http://localhost:3000/api/blog/all", {
-    next: { revalidate: 60 },
-  });
+  const res = await fetch("http://localhost:3000/api/blog/all");
   if (!res.ok) throw new Error("Failed to fetch blogs");
   return res.json();
 };

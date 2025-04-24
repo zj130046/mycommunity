@@ -143,7 +143,10 @@ export default function RightCard() {
                 <div>
                   <div className="flex items-center mb-[5px]">
                     <Image
-                      src={comment.avatar_url || "/assets/20.jpg"}
+                      src={
+                        comment.avatar_url ||
+                        "https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
+                      }
                       alt="评论用户头像"
                       width={45}
                       height={45}

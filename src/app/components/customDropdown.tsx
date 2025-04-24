@@ -58,7 +58,7 @@ const Dropdown = () => {
             />
           ) : (
             <Image
-              src="/assets/20.jpg"
+              src="https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
               alt="示例图片"
               width={45}
               height={45}

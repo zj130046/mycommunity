@@ -2,9 +2,7 @@ import Head from "next/head";
 import ClientComponent from "./client";
 
 const fetchComments = async () => {
-  const res = await fetch("http://localhost:3000/api/comments", {
-    next: { revalidate: 60 },
-  });
+  const res = await fetch("http://localhost:3000/api/comments");
   if (!res.ok) throw new Error("Failed to fetch comments");
   return res.json();
 };

@@ -52,7 +52,10 @@ const SearchDetails = () => {
                       <div className="flex">
                         <div>
                           <Image
-                            src={blog.avatar_url || "/assets/20.jpg"}
+                            src={
+                              blog.avatar_url ||
+                              "https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
+                            }
                             alt="示例图片"
                             width={45}
                             height={45}
@@ -158,7 +161,10 @@ const SearchDetails = () => {
                     className="flex border-b-1 items-center gap-2 pt-4 pb-4"
                   >
                     <Image
-                      src={user.avatar_url || "/assets/20.jpg"}
+                      src={
+                        user.avatar_url ||
+                        "https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
+                      }
                       alt="示例图片"
                       width={60}
                       height={60}

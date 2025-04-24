@@ -1,6 +1,13 @@
 "use client";
 
-import { lazy, useEffect, useState, Suspense } from "react";
+import {
+  lazy,
+  useEffect,
+  useState,
+  Suspense,
+  useCallback,
+  useRef,
+} from "react";
 import { useRouter } from "next/navigation";
 import { IoMdPaperPlane } from "react-icons/io";
 import { useDisclosure, Button, Card, Image } from "@heroui/react";
@@ -14,7 +21,9 @@ import { handleLoginSubmit, handleRegisterSubmit } from "../utils/page";
 import { Blog } from "../store/message";
 import { BiMessageDetail, BiLike } from "react-icons/bi";
 import { uploadFile } from "../utils/page";
-import { debounce } from "lodash";
+import useDebounce from "../hooks/useDebounce";
+import { VariableSizeList as List } from "react-window";
+import AutoSizer from "react-virtualized-auto-sizer";
 
 const MyEditor = lazy(() => import("@/app/components/editor"));
 const LoginModal = lazy(() => import("../components/LoginModal"));
@@ -44,6 +53,39 @@ export default function ClientComponent({
   const [img, setImg] = useState("");
   const [file, setFile] = useState(null);
   const [blogs, setBlogs] = useState<Blog[]>(initialBlogs);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const listRef = useRef<List>(null);
+
+  // 计算每项高度的函数
+  const getItemSize = useCallback(
+    (index: number) => {
+      const blog = blogs[index];
+      if (!blog) return 300; // 默认高度
+
+      let height = 180; // 基础高度（用户信息+间距）
+
+      // 内容高度（每100字符增加20px）
+      const contentHeight = Math.ceil(blog.content.length / 100) * 20;
+      height += Math.min(contentHeight, 200); // 限制最大内容高度
+
+      // 图片高度
+      if (blog.img) height += 200;
+
+      // 底部操作栏高度
+      height += 50;
+
+      return height;
+    },
+    [blogs]
+  );
+
+  // 当blogs变化时重置列表高度缓存
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.resetAfterIndex(0);
+    }
+  }, [blogs]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -53,7 +95,7 @@ export default function ClientComponent({
     }
   };
 
-  const handleSubmit = debounce(async () => {
+  const handleSubmit = async () => {
     let imageUrl = img;
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     if (file) {
@@ -88,12 +130,14 @@ export default function ClientComponent({
     setImg("");
     const result = await response.json();
     if (response.ok) {
-      alert("帖子发布并成功");
-      fetchBlogs();
+      alert("帖子发布成功");
+      fetchBlogs(1); // 刷新第一页数据
     } else {
       alert(result.message);
     }
-  }, 500);
+  };
+
+  const debouncedHandleSubmit = useDebounce(handleSubmit, 500);
 
   const handleLike = async (id) => {
     try {
@@ -103,28 +147,45 @@ export default function ClientComponent({
       if (!response.ok) {
         throw new Error("点赞失败");
       }
-      fetchBlogs();
+      setBlogs((prev) =>
+        prev.map((blog) =>
+          blog.id === id
+            ? { ...blog, like_count: blog.like_count + 1, liked: true }
+            : blog
+        )
+      );
     } catch (error) {
       console.log(error);
     }
   };
 
-  const fetchBlogs = async () => {
+  const fetchBlogs = async (page = 1, limit = 10) => {
     try {
-      const response = await fetch("/api/blog/all");
+      setIsLoading(true);
+      const response = await fetch(`/api/blog/all?page=${page}&limit=${limit}`);
       if (!response.ok) {
         throw new Error("error");
       }
       const data = await response.json();
-      setBlogs(data.blogs);
+      setBlogs((prev) => (page === 1 ? data.blogs : [...prev, ...data.blogs]));
+      setHasMore(data.hasMore);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     fetchBlogs();
   }, []);
+
+  const handleLoadMore = () => {
+    if (!isLoading && hasMore) {
+      const nextPage = Math.ceil(blogs.length / 10) + 1;
+      fetchBlogs(nextPage);
+    }
+  };
 
   const loginCard = (
     <Card className="h-[500px] shadow-lg w-full mb-[12px] dark:bg-gray-900 p-[22px]">
@@ -162,7 +223,7 @@ export default function ClientComponent({
 
   const loggedInCard = (
     <Card className="p-[16px] w-full shadow-lg flex items-center flex-col min-h-[200px] mb-[12px] dark:bg-gray-900">
-      <Suspense fallback="<div>Loading...</div>">
+      <Suspense fallback={<div>Loading editor...</div>}>
         <MyEditor
           defaultContent={content}
           onChange={(html) => setContent(html)}
@@ -171,7 +232,7 @@ export default function ClientComponent({
 
       <label
         htmlFor="coverUpload"
-        className="relative  mb-[10px] flex-normal h-20 w-full border-2 border-dashed border-gray-300 rounded-md cursor-pointer"
+        className="relative mb-[10px] flex-normal h-20 w-full border-2 border-dashed border-gray-300 rounded-md cursor-pointer"
       >
         <input
           type="file"
@@ -194,83 +255,132 @@ export default function ClientComponent({
           <span className="text-gray-500">添加帖子封面</span>
         )}
       </label>
-      <Button color="primary" onClick={handleSubmit}>
+      <Button color="primary" onClick={debouncedHandleSubmit}>
         <IoMdPaperPlane />
         发布帖子
       </Button>
     </Card>
   );
 
+  const BlogRow = useCallback(
+    ({ index, style }: { index: number; style: React.CSSProperties }) => {
+      const blog = blogs[index];
+      return (
+        <div
+          key={blog.id}
+          style={style}
+          className="cursor-pointer p-[24px] w-full flex dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          <div className="flex justify-center flex-col w-full">
+            <div className="flex">
+              <Link href={`/blog/${blog.slug}`}>
+                <Image
+                  src={
+                    blog.avatar_url ||
+                    "https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
+                  }
+                  alt="示例图片"
+                  width={45}
+                  height={45}
+                  className="rounded-full"
+                />
+              </Link>
+              <div className="flex flex-col ml-4">
+                <p className="text-[14px]">{blog.username}</p>
+                <p className="text-[#999AAA] text-[12px]">
+                  {dayjs(blog.created_at).format("YYYY-MM-DD")}
+                </p>
+              </div>
+            </div>
+            <Link
+              href={`/blog/${blog.slug}`}
+              className="px-14 pb-2"
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(
+                  blog.content.length > 400
+                    ? blog.content.slice(0, 400) + "..."
+                    : blog.content
+                ),
+              }}
+            ></Link>
+
+            {blog.img && (
+              <div className="w-full max-h-[180px] mb-[10px] px-14">
+                <Image
+                  src={blog.img}
+                  alt="示例图片"
+                  width={900}
+                  height={180}
+                  className="w-full h-auto max-h-[180px] object-contain"
+                />
+              </div>
+            )}
+            <div className="flex justify-around mt-4">
+              <div className="flex items-center">
+                <BiLike
+                  className={`text-[22px] mr-2 cursor-pointer ${
+                    blog.liked ? "text-blue-500" : "text-[#999999]"
+                  }`}
+                  onClick={() => handleLike(blog.id)}
+                />
+                <p className="text-[#999999]">{blog.like_count}</p>
+              </div>
+              <div className="flex items-center">
+                <BiMessageDetail className="text-[22px] text-[#999999] mr-2" />
+                <p className="text-[#999999]">{blog.comment_count || 0}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    },
+    [blogs]
+  );
+
   return (
-    <div className=" community-content ">
+    <div className="community-content">
       <Card className="left w-[100px] h-[300px] shadow-lg dark:bg-gray-900"></Card>
       <div className="w-[730px]">
         {user?.username ? loggedInCard : loginCard}
-        {blogs.map((blog, index) => (
-          <Card
-            key={index}
-            className="cursor-pointer p-[24px] w-full shadow-lg flex mb-[8px] dark:bg-gray-900"
-          >
-            <div className="flex justify-center flex-col">
-              <div className="flex">
-                <Link href={`/blog/${blog.slug}`}>
-                  <Image
-                    src={blog.avatar_url || "/assets/20.jpg"}
-                    alt="示例图片"
-                    width={45}
-                    height={45}
-                    className="rounded-full"
-                  />
-                </Link>
-                <div className="flex flex-col ml-4">
-                  <p className="text-[14px]">{blog.username}</p>
-                  <p className="text-[#999AAA] text-[12px]">
-                    {dayjs(blog.created_at).format("YYYY-MM-DD")}
-                  </p>
-                </div>
-              </div>
-              <Link
-                href={`/blog/${blog.slug}`}
-                className="px-14 pb-2"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(
-                    blog.content.length > 400
-                      ? blog.content.slice(0, 400)
-                      : blog.content
-                  ),
-                }}
-              ></Link>
-
-              <div className="w-full max-h-[180px] mb-[10px] px-14">
-                {blog.img ? (
-                  <Image
-                    src={blog.img}
-                    alt="示例图片"
-                    width={900}
-                    height={180}
-                  />
-                ) : (
-                  ""
-                )}
-              </div>
-              <div className="flex justify-around">
-                <div className="flex justify-around">
-                  <BiLike
-                    className="text-[22px] text-[#999999] mr-2"
-                    onClick={() => handleLike(blog.id)}
-                  />
-                  <p className="text-[#999999]">{blog.like_count}</p>
-                </div>
-                <div className="flex justify-around items-center">
-                  <BiMessageDetail className="text-[22px] text-[#999999] mr-2" />
-                  <p className="text-[#999999]">{blog.like_count}</p>
-                </div>
-              </div>
+        <Card className="w-full b-[100px] dark:bg-gray-900">
+          <div className="w-full h-[calc(100vh-300px)]">
+            <AutoSizer>
+              {({ height, width }) => (
+                <List
+                  ref={listRef}
+                  height={height}
+                  width={width}
+                  itemCount={blogs.length}
+                  itemSize={getItemSize}
+                  estimatedItemSize={300}
+                  onItemsRendered={({ visibleStopIndex }) => {
+                    if (
+                      visibleStopIndex >= blogs.length - 2 &&
+                      hasMore &&
+                      !isLoading
+                    ) {
+                      handleLoadMore();
+                    }
+                  }}
+                >
+                  {BlogRow}
+                </List>
+              )}
+            </AutoSizer>
+          </div>
+          {isLoading && (
+            <div className="w-full flex justify-center py-4">
+              <p>加载中...</p>
             </div>
-          </Card>
-        ))}
+          )}
+          {!hasMore && blogs.length > 0 && (
+            <div className="w-full flex justify-center py-4">
+              <p>没有更多博客了</p>
+            </div>
+          )}
+        </Card>
       </div>
-      <Suspense fallback="<div>Loading...</div>">
+      <Suspense fallback={<div>Loading...</div>}>
         <LoginModal
           isOpen={isLoginOpen}
           onOpenChange={onLoginOpenChange}
@@ -278,7 +388,7 @@ export default function ClientComponent({
           onSubmit={(e) => handleLoginSubmit(e, login, onLoginOpenChange)}
         />
       </Suspense>
-      <Suspense fallback="<div>Loading...</div>">
+      <Suspense fallback={<div>Loading...</div>}>
         <RegisterModal
           isOpen={isRegisterOpen}
           onOpenChange={onRegisterOpenChange}

@@ -18,9 +18,7 @@ export default async function Category({
   params: { category: string };
 }) {
   const { category } = await params;
-  const res = await fetch(`http://localhost:3000/api/articles/${category}`, {
-    next: { revalidate: 60 },
-  });
+  const res = await fetch(`http://localhost:3000/api/articles/${category}`);
   const data = await res.json();
 
   return <ClientComponent initialArticles={data} />;

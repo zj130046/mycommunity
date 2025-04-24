@@ -167,7 +167,10 @@ export default function About() {
       <Card className="w-full shadow-lg flex mb-[20px] h-[400px] dark:bg-gray-600">
         <div className="w-full h-[300px] gradient-bg relative"></div>
         <Image
-          src={user?.avatarUrl || "/assets/20.jpg"}
+          src={
+            user?.avatarUrl ||
+            "https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
+          }
           alt="用户头像"
           width={120}
           height={120}
@@ -304,7 +307,10 @@ export default function About() {
                 >
                   <div className="w-[60px] h-[60px] mr-[20px]">
                     <Image
-                      src={user?.avatarUrl || "/assets/20.jpg"}
+                      src={
+                        user?.avatarUrl ||
+                        "https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
+                      }
                       alt="示例图片"
                       width={60}
                       height={60}
@@ -338,7 +344,10 @@ export default function About() {
               >
                 <div className="w-[60px] h-[60px] mr-[20px]">
                   <Image
-                    src={user?.avatarUrl || "/assets/20.jpg"}
+                    src={
+                      user?.avatarUrl ||
+                      "https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
+                    }
                     alt="示例图片"
                     width={60}
                     height={60}

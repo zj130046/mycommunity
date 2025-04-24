@@ -21,8 +21,8 @@ export default function ClientComponent({
   const [catelist] = useState<Article[]>(initialArticles);
   const pageSize = 5;
   const totalPage = useMemo(
-    () => Math.ceil(catelist.length / pageSize),
-    [catelist.length, pageSize]
+    () => Math.ceil(catelist?.length / pageSize),
+    [catelist?.length, pageSize]
   );
   const indexLast = useMemo(
     () => currentPage * pageSize,
@@ -30,14 +30,14 @@ export default function ClientComponent({
   );
   const indexFirst = useMemo(() => indexLast - pageSize, [indexLast, pageSize]);
   const currentList = useMemo(
-    () => catelist.slice(indexFirst, indexLast),
+    () => catelist?.slice(indexFirst, indexLast),
     [catelist, indexFirst, indexLast]
   );
 
   return (
     <div className="flex w-full m-auto items-start justify-between article">
       <div>
-        {currentList.map((article, index) => (
+        {currentList?.map((article, index) => (
           <Card
             key={index}
             className="w-full shadow-lg flex justify-center flex-col mb-[26px] dark:bg-gray-900"

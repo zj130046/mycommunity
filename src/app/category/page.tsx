@@ -8,9 +8,7 @@ interface Response {
 }
 
 export default async function Category() {
-  const res = await fetch("http://localhost:3000/api/articles/all", {
-    next: { revalidate: 60 },
-  });
+  const res = await fetch("http://localhost:3000/api/articles/all");
   const data: Response = await res.json();
   const articles = data.articles;
 

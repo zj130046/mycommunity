@@ -13,6 +13,9 @@ import { Comment } from "../store/message";
 import { BiLike } from "react-icons/bi";
 import { handleLoginSubmit, handleRegisterSubmit } from "../utils/page";
 
+import { FixedSizeList as List } from "react-window";
+import AutoSizer from "react-virtualized-auto-sizer";
+
 const LoginModal = lazy(() => import("../components/LoginModal"));
 const RegisterModal = lazy(() => import("../components/RegisterModal"));
 
@@ -24,7 +27,7 @@ export default function ClientComponent({
   initialComments,
 }: ClientComponentProps) {
   const { user, login } = useUserStore();
-  const [comments, setComments] = useState(initialComments);
+  const [comments, setComments] = useState<Comment[]>(initialComments);
 
   const {
     isOpen: isLoginOpen,
@@ -40,6 +43,9 @@ export default function ClientComponent({
   const fetchComments = async () => {
     try {
       const res = await fetch("/api/comments");
+      if (!res.ok) {
+        throw new Error("点赞失败");
+      }
       const data = await res.json();
       setComments(data.comments);
     } catch (error) {
@@ -97,7 +103,7 @@ export default function ClientComponent({
           />
         ) : (
           <Image
-            src="/assets/20.jpg"
+            src="https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
             alt="默认头像"
             width={45}
             height={45}
@@ -113,9 +119,10 @@ export default function ClientComponent({
   );
 
   return (
-    <Card className="w-full shadow-lg p-[15px] flex items-center flex-col h-[2000px] dark:bg-gray-900">
+    <Card className="w-full shadow-lg p-[15px] flex items-center flex-col dark:bg-gray-900 mb-[100px]">
       {user ? loggedInCard : loginCard}
-      <Suspense fallback="<div>Loading...</div>">
+
+      <Suspense fallback={<div>Loading...</div>}>
         <LoginModal
           isOpen={isLoginOpen}
           onOpenChange={onLoginOpenChange}
@@ -124,7 +131,7 @@ export default function ClientComponent({
         />
       </Suspense>
 
-      <Suspense fallback="<div>Loading...</div>">
+      <Suspense fallback={<div>Loading...</div>}>
         <RegisterModal
           isOpen={isRegisterOpen}
           onOpenChange={onRegisterOpenChange}
@@ -133,40 +140,63 @@ export default function ClientComponent({
         />
       </Suspense>
 
-      <div className="p-[10px] w-full">
+      <div className="p-[10px] w-full h-[600px]">
         <p className="text-[18px] text-[#1A1A1A] mb-[5px]">评论列表</p>
-        {comments.map((comment) => (
-          <div
-            className="flex w-full justify-between border-b-1 pt-4 pb-4 cursor-pointer"
-            key={comment.id}
-          >
-            <div className="flex items-center">
-              <Image
-                src={comment.avatar_url || "/assets/20.jpg"}
-                alt="评论用户头像"
-                width={45}
-                height={45}
-                className="w-[45px] h-[45px] rounded-full mr-[18px]"
-              />
-              <div>
-                <p className="text-[15px] mb-[3px]">{comment.username}</p>
-                <p className="text-[14px] mb-[8px] text-[#4E5358]">
-                  {comment.content}
-                </p>
-                <p className="text-[14px] text-[#999999]">
-                  {dayjs(comment.created_at).format("YYYY-MM-DD")}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center">
-              <BiLike
-                className="text-[22px] text-[#999999] mr-2"
-                onClick={() => handleLike(comment.id)}
-              />
-              <p className="text-[#999999]">{comment.like_count}</p>
-            </div>
-          </div>
-        ))}
+
+        <div className="w-full h-full">
+          <AutoSizer>
+            {({ height, width }) => (
+              <List
+                height={height}
+                width={width}
+                itemCount={comments.length}
+                itemSize={100} // 每项高度，按需调整
+              >
+                {({ index, style }) => {
+                  const comment = comments[index];
+                  return (
+                    <div
+                      key={comment.id}
+                      style={style}
+                      className="flex w-full justify-between border-b-1 pt-4 pb-4 px-2 cursor-pointer"
+                    >
+                      <div className="flex items-center">
+                        <Image
+                          src={
+                            comment.avatar_url ||
+                            "https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
+                          }
+                          alt="评论用户头像"
+                          width={45}
+                          height={45}
+                          className="w-[45px] h-[45px] rounded-full mr-[18px]"
+                        />
+                        <div>
+                          <p className="text-[15px] mb-[3px]">
+                            {comment.username}
+                          </p>
+                          <p className="text-[14px] mb-[8px] text-[#4E5358]">
+                            {comment.content}
+                          </p>
+                          <p className="text-[14px] text-[#999999]">
+                            {dayjs(comment.created_at).format("YYYY-MM-DD")}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        <BiLike
+                          className="text-[22px] text-[#999999] mr-2"
+                          onClick={() => handleLike(comment.id)}
+                        />
+                        <p className="text-[#999999]">{comment.like_count}</p>
+                      </div>
+                    </div>
+                  );
+                }}
+              </List>
+            )}
+          </AutoSizer>
+        </div>
       </div>
     </Card>
   );

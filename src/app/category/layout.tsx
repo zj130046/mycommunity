@@ -1,19 +1,25 @@
 "use client";
 
 import Link from "next/link";
+
 import { Card } from "@heroui/react";
 import RightCard from "../components/rightcard";
 import { usePathname } from "next/navigation";
 import Carousel from "../components/carousel";
-import { navItems } from "../store/message";
+import { navItems, Article } from "../store/message";
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-  const pathname = usePathname();
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+  articles: Article[];
+}
+
+const DashboardLayout = ({ children, articles }: DashboardLayoutProps) => {
+  const pathname = usePathname(); //当前页面路径
   const isAllSelected = pathname === "/category" || pathname === "/";
 
   return (
     <div className="m-auto w-full max-w-[1150px] flex flex-col justify-center">
-      <Carousel />
+      <Carousel articles={articles} />
       <div className="w-full flex justify-between">
         <div className="flex flex-col w-full article">
           <Card className="shadow-lg dark:bg-gray-900 mb-[20px]">

@@ -29,7 +29,7 @@ export default function MessageCard() {
       <div className="flex flex-col items-center">
         <div className="w-[80px] h-[80px] relative m-auto mb-[20px]">
           <Image
-            src="/assets/20.jpg"
+            src="https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
             alt="示例图片"
             width={80}
             height={80}
@@ -80,7 +80,7 @@ export default function MessageCard() {
             />
           ) : (
             <Image
-              src="/assets/20.jpg"
+              src="https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
               alt="示例图片"
               width={80}
               height={80}

@@ -158,7 +158,7 @@ export default function About() {
   };
 
   const loginCard = (
-    <Card className="h-[500px] shadow-lg max-w-[840px] mb-[20px] dark:bg-gray-900 p-[22px]">
+    <Card className="h-[500px] shadow-lg w-[840px] mb-[20px] dark:bg-gray-900 p-[22px]">
       <div className="flex flex-col items-center m-auto">
         <p className="mt-[20px] mb-[20px] text-[16.8px] text-[#B1B1B1] text-center">
           你好,请先登录！
