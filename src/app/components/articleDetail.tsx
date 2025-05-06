@@ -18,7 +18,7 @@ const Component = ({ slug }: { slug: string }) => {
     );
   }
 
-  const cleanContent = DOMPurify.sanitize(data.content);
+  const cleanContent = DOMPurify.sanitize(data.content); //防止 XSS 攻击，确保富文本内容安全渲染
 
   return (
     <div className="flex max-w-[1060px] m-auto items-start justify-between">
@@ -29,6 +29,8 @@ const Component = ({ slug }: { slug: string }) => {
           </p>
           <div
             className="w-full"
+            //dangerouslySetInnerHTML 是 React 中唯一允许直接插入 HTML 的方式，
+            // 但必须严格遵守安全规范
             dangerouslySetInnerHTML={{ __html: cleanContent }}
           ></div>
         </div>

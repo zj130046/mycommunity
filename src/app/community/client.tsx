@@ -53,8 +53,6 @@ export default function ClientComponent({
   const [img, setImg] = useState("");
   const [file, setFile] = useState(null);
   const [blogs, setBlogs] = useState<Blog[]>(initialBlogs);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const listRef = useRef<List>(null);
 
   // 计算每项高度的函数
@@ -69,7 +67,6 @@ export default function ClientComponent({
       const contentHeight = Math.ceil(blog.content.length / 100) * 20;
       height += Math.min(contentHeight, 200); // 限制最大内容高度
 
-      // 图片高度
       if (blog.img) height += 200;
 
       // 底部操作栏高度
@@ -80,18 +77,20 @@ export default function ClientComponent({
     [blogs]
   );
 
-  // 当blogs变化时重置列表高度缓存
+  // 当 blogs 数据更新后，强制让虚拟列表重新计算每一项的高度和位置，从第 0 项开始
   useEffect(() => {
     if (listRef.current) {
       listRef.current.resetAfterIndex(0);
     }
   }, [blogs]);
 
+  //调用浏览器原生 API，将 File 对象转换为一个临时 URL（格式为 blob:http://...）
+  //用于在前端页面中预览图片或文件
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFile(file);
-      setImg(URL.createObjectURL(file));
+      setImg(URL.createObjectURL(file)); //创建一个临时的在线地址
     }
   };
 
@@ -131,7 +130,6 @@ export default function ClientComponent({
     const result = await response.json();
     if (response.ok) {
       alert("帖子发布成功");
-      fetchBlogs(1); // 刷新第一页数据
     } else {
       alert(result.message);
     }
@@ -156,34 +154,6 @@ export default function ClientComponent({
       );
     } catch (error) {
       console.log(error);
-    }
-  };
-
-  const fetchBlogs = async (page = 1, limit = 10) => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`/api/blog/all?page=${page}&limit=${limit}`);
-      if (!response.ok) {
-        throw new Error("error");
-      }
-      const data = await response.json();
-      setBlogs((prev) => (page === 1 ? data.blogs : [...prev, ...data.blogs]));
-      setHasMore(data.hasMore);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBlogs();
-  }, []);
-
-  const handleLoadMore = () => {
-    if (!isLoading && hasMore) {
-      const nextPage = Math.ceil(blogs.length / 10) + 1;
-      fetchBlogs(nextPage);
     }
   };
 
@@ -353,31 +323,12 @@ export default function ClientComponent({
                   itemCount={blogs.length}
                   itemSize={getItemSize}
                   estimatedItemSize={300}
-                  onItemsRendered={({ visibleStopIndex }) => {
-                    if (
-                      visibleStopIndex >= blogs.length - 2 &&
-                      hasMore &&
-                      !isLoading
-                    ) {
-                      handleLoadMore();
-                    }
-                  }}
                 >
                   {BlogRow}
                 </List>
               )}
             </AutoSizer>
           </div>
-          {isLoading && (
-            <div className="w-full flex justify-center py-4">
-              <p>加载中...</p>
-            </div>
-          )}
-          {!hasMore && blogs.length > 0 && (
-            <div className="w-full flex justify-center py-4">
-              <p>没有更多博客了</p>
-            </div>
-          )}
         </Card>
       </div>
       <Suspense fallback={<div>Loading...</div>}>

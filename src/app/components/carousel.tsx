@@ -16,7 +16,7 @@ export default function Carousel({ articles }: CarouselProps) {
   useEffect(() => {
     if (articles.length > 0) {
       setArticlesLatest([
-        articles[articles.length - 1],
+        articles[articles.length - 1], //克隆最后一张
         ...articles,
         articles[0],
       ]);
@@ -71,6 +71,7 @@ export default function Carousel({ articles }: CarouselProps) {
 
   return (
     <>
+      {/* 预加载首张图片，优化页面首屏加载速度 */}
       <Head>
         {firstRealImage && (
           <link rel="preload" as="image" href={firstRealImage} />
@@ -88,7 +89,7 @@ export default function Carousel({ articles }: CarouselProps) {
             style={{
               transform: `translateX(-${activeIndex * 100}%)`,
             }}
-            onTransitionEnd={handleTransitionEnd}
+            onTransitionEnd={handleTransitionEnd} //handleTransitionEnd 瞬间无动画跳转到真实的对应项
           >
             {articlesLatest.map((article, index) => (
               <div

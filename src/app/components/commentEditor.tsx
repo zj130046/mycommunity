@@ -14,7 +14,7 @@ import { emojiList } from "../store/message";
 import useDebounce from "../hooks/useDebounce";
 
 const EmojiButton = () => {
-  const [editor] = useLexicalComposerContext();
+  const [editor] = useLexicalComposerContext(); //获取当前编辑器实例
   const [showPicker, setShowPicker] = useState(false);
   return (
     <div className="relative">
@@ -32,14 +32,16 @@ const EmojiButton = () => {
               key={emoji}
               onClick={() => {
                 editor.update(() => {
-                  const selection = $getSelection();
+                  //用于修改编辑器内容
+                  const selection = $getSelection(); //获取当前光标选区
                   if ($isRangeSelection(selection)) {
-                    selection.insertText(emoji);
+                    //检查是否是文本选区
+                    selection.insertText(emoji); //在光标处插入表情
                   }
                 });
                 setShowPicker(false);
               }}
-              className="text-xl p-1"
+              className="text-xl p-1 z-1000"
             >
               {emoji}
             </button>
@@ -84,6 +86,7 @@ export default function CommentEditor({ onCommentSubmit }) {
   const debouncedsubmit = useDebounce(submit, 500);
 
   return (
+    //初始化
     <LexicalComposer
       initialConfig={{
         namespace: "CommentEditor",
@@ -91,6 +94,7 @@ export default function CommentEditor({ onCommentSubmit }) {
         onError: (error) => console.error(error),
       }}
     >
+      {/* 富文本编辑区域 */}
       <RichTextPlugin
         contentEditable={
           <ContentEditable className="border p-2 rounded-md w-full" />
@@ -120,8 +124,9 @@ const EditorChangeListener = ({
   const [editor] = useLexicalComposerContext();
 
   editor.registerUpdateListener(({ editorState }) => {
+    //监听编辑器内容变化
     editorState.read(() => {
-      const text = $getRoot().getTextContent();
+      const text = $getRoot().getTextContent(); //获取纯文本（不含 HTML 标签）
       onChange(text);
     });
   });

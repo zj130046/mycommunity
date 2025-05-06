@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, useEffect, useState, Suspense } from "react";
+import { lazy, useEffect, useRef, useState, Suspense } from "react";
 import { useDisclosure } from "@heroui/react";
 import { Button, Card } from "@heroui/react";
 import { MdLogin } from "react-icons/md";
@@ -13,7 +13,7 @@ import { Comment } from "../store/message";
 import { BiLike } from "react-icons/bi";
 import { handleLoginSubmit, handleRegisterSubmit } from "../utils/page";
 
-import { FixedSizeList as List } from "react-window";
+import { VariableSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 
 const LoginModal = lazy(() => import("../components/LoginModal"));
@@ -28,6 +28,8 @@ export default function ClientComponent({
 }: ClientComponentProps) {
   const { user, login } = useUserStore();
   const [comments, setComments] = useState<Comment[]>(initialComments);
+  const commentRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+  const sizeMap = useRef<{ [key: number]: number }>({});
 
   const {
     isOpen: isLoginOpen,
@@ -43,9 +45,7 @@ export default function ClientComponent({
   const fetchComments = async () => {
     try {
       const res = await fetch("/api/comments");
-      if (!res.ok) {
-        throw new Error("点赞失败");
-      }
+      if (!res.ok) throw new Error("点赞失败");
       const data = await res.json();
       setComments(data.comments);
     } catch (error) {
@@ -56,6 +56,22 @@ export default function ClientComponent({
   useEffect(() => {
     fetchComments();
   }, []);
+
+  // 动态计算每项高度
+  const getItemSize = (index: number) => {
+    const comment = comments[index];
+    return sizeMap.current[comment.id] ?? 120;
+  };
+
+  useEffect(() => {
+    comments.forEach((comment) => {
+      const el = commentRefs.current[comment.id]; //保存着所有评论对应的 DOM 元素引用
+      if (el) {
+        const height = el.getBoundingClientRect().height; // 获取元素在页面中的真实高度
+        sizeMap.current[comment.id] = height;
+      }
+    });
+  }, [comments]);
 
   const handleLike = async (commentId: number) => {
     const res = await fetch(`/api/comments/like/${commentId}`, {
@@ -93,23 +109,16 @@ export default function ClientComponent({
   const loggedInCard = (
     <div className="w-full flex gap-5 shadow-lg mb-[20px] dark:bg-gray-900 p-[22px]">
       <div className="w-[45px] flex flex-col items-center">
-        {user?.avatarUrl ? (
-          <Image
-            src={user.avatarUrl}
-            alt="用户头像"
-            width={45}
-            height={45}
-            className="w-[45px] h-[45px] cursor-pointer rounded-full"
-          />
-        ) : (
-          <Image
-            src="https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
-            alt="默认头像"
-            width={45}
-            height={45}
-            className="w-[45px] h-[45px] cursor-pointer rounded-full"
-          />
-        )}
+        <Image
+          src={
+            user?.avatarUrl ||
+            "https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
+          }
+          alt="用户头像"
+          width={45}
+          height={45}
+          className="w-[45px] h-[45px] cursor-pointer rounded-full"
+        />
         <p className="mb-[20px]">{user?.username || "未登录"}</p>
       </div>
       <div className="w-full">
@@ -142,7 +151,6 @@ export default function ClientComponent({
 
       <div className="p-[10px] w-full h-[600px]">
         <p className="text-[18px] text-[#1A1A1A] mb-[5px]">评论列表</p>
-
         <div className="w-full h-full">
           <AutoSizer>
             {({ height, width }) => (
@@ -150,17 +158,19 @@ export default function ClientComponent({
                 height={height}
                 width={width}
                 itemCount={comments.length}
-                itemSize={100} // 每项高度，按需调整
+                itemSize={getItemSize}
               >
                 {({ index, style }) => {
+                  //必须传，react-window 会计算并控制元素的位置
                   const comment = comments[index];
                   return (
                     <div
+                      ref={(el) => (commentRefs.current[comment.id] = el)} //确保每个元素都能被测量
                       key={comment.id}
                       style={style}
-                      className="flex w-full justify-between border-b-1 pt-4 pb-4 px-2 cursor-pointer"
+                      className="flex w-full justify-between border-b pt-4 pb-4 px-2"
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-start">
                         <Image
                           src={
                             comment.avatar_url ||
@@ -185,7 +195,7 @@ export default function ClientComponent({
                       </div>
                       <div className="flex items-center">
                         <BiLike
-                          className="text-[22px] text-[#999999] mr-2"
+                          className="text-[22px] text-[#999999] mr-2 cursor-pointer"
                           onClick={() => handleLike(comment.id)}
                         />
                         <p className="text-[#999999]">{comment.like_count}</p>
