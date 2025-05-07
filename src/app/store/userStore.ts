@@ -27,13 +27,13 @@ const useUserStore = create<UserState>()(
       },
       logout: () => {
         set({ user: null, token: null });
-        const storage = createJSONStorage(() => sessionStorage); // 改为 sessionStorage
+        const storage = createJSONStorage(() => localStorage); // 改为 localStorage
         storage.removeItem("user-storage");
       },
     }),
     {
       name: "user-storage", // 持久化存储的名称
-      storage: createJSONStorage(() => sessionStorage), // 使用 sessionStorage
+      storage: createJSONStorage(() => localStorage), // 使用 localStorage
     }
   )
 );

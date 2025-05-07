@@ -80,17 +80,15 @@ export default function ClientComponent({
   // 当 blogs 数据更新后，强制让虚拟列表重新计算每一项的高度和位置，从第 0 项开始
   useEffect(() => {
     if (listRef.current) {
-      listRef.current.resetAfterIndex(0);
+      listRef.current.resetAfterIndex(0); //VariableSizeList 组件自带的方法
     }
   }, [blogs]);
 
-  //调用浏览器原生 API，将 File 对象转换为一个临时 URL（格式为 blob:http://...）
-  //用于在前端页面中预览图片或文件
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFile(file);
-      setImg(URL.createObjectURL(file)); //创建一个临时的在线地址
+      setImg(URL.createObjectURL(file));
     }
   };
 
@@ -322,7 +320,7 @@ export default function ClientComponent({
                   width={width}
                   itemCount={blogs.length}
                   itemSize={getItemSize}
-                  estimatedItemSize={300}
+                  estimatedItemSize={300} //提供列表项的预估高度
                 >
                   {BlogRow}
                 </List>

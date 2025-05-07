@@ -14,9 +14,9 @@ export default function Carousel({ articles }: CarouselProps) {
   const [isTransitioning, setIsTransitioning] = useState(true);
 
   useEffect(() => {
-    if (articles.length > 0) {
+    if (articles?.length > 0) {
       setArticlesLatest([
-        articles[articles.length - 1], //克隆最后一张
+        articles[articles?.length - 1], //克隆最后一张
         ...articles,
         articles[0],
       ]);
@@ -89,7 +89,7 @@ export default function Carousel({ articles }: CarouselProps) {
             style={{
               transform: `translateX(-${activeIndex * 100}%)`,
             }}
-            onTransitionEnd={handleTransitionEnd} //handleTransitionEnd 瞬间无动画跳转到真实的对应项
+            onTransitionEnd={handleTransitionEnd} //当轮播图的 transform 动画完成后，就会触发 handleTransitionEnd。
           >
             {articlesLatest.map((article, index) => (
               <div
