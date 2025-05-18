@@ -122,6 +122,7 @@ export default function ClientComponent({
       setPendingLike(commentId);
       return;
     }
+
     try {
       const res = await fetch(`/api/comments/like/${commentId}`, {
         method: "POST",
