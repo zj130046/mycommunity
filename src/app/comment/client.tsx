@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, useEffect, useRef, useState, Suspense } from "react";
+import { lazy, useEffect, useState, Suspense } from "react";
 import { useDisclosure } from "@heroui/react";
 import { Button, Card } from "@heroui/react";
 import { MdLogin } from "react-icons/md";
@@ -19,7 +19,7 @@ interface ClientComponentProps {
   initialComments: Comment[];
 }
 
-function CommentItem({ comment, onReply, onLike, replyingId, fetchComments }) {
+function CommentItem({ comment, onLike, fetchComments }) {
   const [showReply, setShowReply] = useState(false);
   return (
     <div className="mb-2 pl-4 border-l">
@@ -73,9 +73,7 @@ function CommentItem({ comment, onReply, onLike, replyingId, fetchComments }) {
             <CommentItem
               key={child.id}
               comment={child}
-              onReply={onReply}
               onLike={onLike}
-              replyingId={replyingId}
               fetchComments={fetchComments}
             />
           ))}
@@ -90,8 +88,7 @@ export default function ClientComponent({
 }: ClientComponentProps) {
   const { user, login } = useUserStore();
   const [comments, setComments] = useState<Comment[]>(initialComments);
-  const commentRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
-  const sizeMap = useRef<{ [key: number]: number }>({});
+  const [pendingLike, setPendingLike] = useState<number | null>(null);
 
   const {
     isOpen: isLoginOpen,
@@ -107,7 +104,7 @@ export default function ClientComponent({
   const fetchComments = async () => {
     try {
       const res = await fetch("/api/comments");
-      if (!res.ok) throw new Error("点赞失败");
+      if (!res.ok) throw new Error("获取评论失败");
       const data = await res.json();
       setComments(data.comments);
     } catch (error) {
@@ -119,23 +116,36 @@ export default function ClientComponent({
     fetchComments();
   }, []);
 
-  useEffect(() => {
-    comments.forEach((comment) => {
-      const el = commentRefs.current[comment.id]; //保存着所有评论对应的 DOM 元素引用
-      if (el) {
-        const height = el.getBoundingClientRect().height; // 获取元素在页面中的真实高度
-        sizeMap.current[comment.id] = height;
-      }
-    });
-  }, [comments]);
-
   const handleLike = async (commentId: number) => {
-    const res = await fetch(`/api/comments/like/${commentId}`, {
-      method: "POST",
-    });
-    if (!res.ok) throw new Error("Failed to like comment");
-    fetchComments();
+    if (!user) {
+      onLoginOpen();
+      setPendingLike(commentId);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/comments/like/${commentId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.userId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.message || "点赞失败");
+        return;
+      }
+      fetchComments();
+    } catch (e) {
+      alert("点赞失败");
+    }
   };
+
+  // 登录后自动点赞
+  useEffect(() => {
+    if (user && pendingLike) {
+      handleLike(pendingLike);
+      setPendingLike(null);
+    }
+  }, [user]);
 
   const loginCard = (
     <Card className="w-full shadow-lg h-[180px] mb-[20px] bg-[#74747414] dark:bg-gray-900 p-[22px]">
@@ -212,7 +222,6 @@ export default function ClientComponent({
             <CommentItem
               key={comment.id}
               comment={comment}
-              onReply={() => {}}
               onLike={handleLike}
               fetchComments={fetchComments}
             />
