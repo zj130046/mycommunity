@@ -10,17 +10,79 @@ import { PiUserCirclePlus } from "react-icons/pi";
 import CommentEditor from "../components/commentEditor";
 import dayjs from "dayjs";
 import { Comment } from "../store/message";
-import { BiLike } from "react-icons/bi";
 import { handleLoginSubmit, handleRegisterSubmit } from "../utils/page";
-
-import { VariableSizeList as List } from "react-window";
-import AutoSizer from "react-virtualized-auto-sizer";
 
 const LoginModal = lazy(() => import("../components/LoginModal"));
 const RegisterModal = lazy(() => import("../components/RegisterModal"));
 
 interface ClientComponentProps {
   initialComments: Comment[];
+}
+
+function CommentItem({ comment, onReply, onLike, replyingId, fetchComments }) {
+  const [showReply, setShowReply] = useState(false);
+  return (
+    <div className="mb-2 pl-4 border-l">
+      <div className="flex items-start">
+        <Image
+          src={
+            comment.avatar_url ||
+            "https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
+          }
+          alt="评论用户头像"
+          width={45}
+          height={45}
+          className="w-[45px] h-[45px] rounded-full mr-[18px]"
+        />
+        <div>
+          <p className="text-[15px] mb-[3px]">{comment.username}</p>
+          <p className="text-[14px] mb-[8px] text-[#4E5358]">
+            {comment.content}
+          </p>
+          <p className="text-[14px] text-[#999999]">
+            {dayjs(comment.created_at).format("YYYY-MM-DD")}
+          </p>
+        </div>
+      </div>
+      <div>
+        <span
+          onClick={() => setShowReply(!showReply)}
+          className="cursor-pointer text-blue-500"
+        >
+          回复
+        </span>
+        <span
+          onClick={() => onLike(comment.id)}
+          className="ml-2 cursor-pointer"
+        >
+          👍 {comment.like_count}
+        </span>
+      </div>
+      {showReply && (
+        <CommentEditor
+          parentId={comment.id}
+          onCommentSubmit={() => {
+            fetchComments();
+            setShowReply(false);
+          }}
+        />
+      )}
+      {comment.children && comment.children.length > 0 && (
+        <div className="ml-4">
+          {comment.children.map((child) => (
+            <CommentItem
+              key={child.id}
+              comment={child}
+              onReply={onReply}
+              onLike={onLike}
+              replyingId={replyingId}
+              fetchComments={fetchComments}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function ClientComponent({
@@ -56,12 +118,6 @@ export default function ClientComponent({
   useEffect(() => {
     fetchComments();
   }, []);
-
-  // 动态计算每项高度
-  const getItemSize = (index: number) => {
-    const comment = comments[index];
-    return sizeMap.current[comment.id] ?? 120;
-  };
 
   useEffect(() => {
     comments.forEach((comment) => {
@@ -149,63 +205,18 @@ export default function ClientComponent({
         />
       </Suspense>
 
-      <div className="p-[10px] w-full h-[600px]">
+      <div className="p-[10px] w-full">
         <p className="text-[18px] text-[#1A1A1A] mb-[5px]">评论列表</p>
-        <div className="w-full h-full">
-          <AutoSizer>
-            {({ height, width }) => (
-              <List
-                height={height}
-                width={width}
-                itemCount={comments.length}
-                itemSize={getItemSize}
-              >
-                {({ index, style }) => {
-                  //必须传，react-window 会计算并控制元素的位置
-                  const comment = comments[index];
-                  return (
-                    <div
-                      ref={(el) => (commentRefs.current[comment.id] = el)} //确保每个元素都能被测量
-                      key={comment.id}
-                      style={style}
-                      className="flex w-full justify-between border-b pt-4 pb-4 px-2"
-                    >
-                      <div className="flex items-start">
-                        <Image
-                          src={
-                            comment.avatar_url ||
-                            "https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1744788030352-20-JpF3TozVPGLdDF8ZJU7X9ijCbTFh48.jpg"
-                          }
-                          alt="评论用户头像"
-                          width={45}
-                          height={45}
-                          className="w-[45px] h-[45px] rounded-full mr-[18px]"
-                        />
-                        <div>
-                          <p className="text-[15px] mb-[3px]">
-                            {comment.username}
-                          </p>
-                          <p className="text-[14px] mb-[8px] text-[#4E5358]">
-                            {comment.content}
-                          </p>
-                          <p className="text-[14px] text-[#999999]">
-                            {dayjs(comment.created_at).format("YYYY-MM-DD")}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        <BiLike
-                          className="text-[22px] text-[#999999] mr-2 cursor-pointer"
-                          onClick={() => handleLike(comment.id)}
-                        />
-                        <p className="text-[#999999]">{comment.like_count}</p>
-                      </div>
-                    </div>
-                  );
-                }}
-              </List>
-            )}
-          </AutoSizer>
+        <div className="w-full">
+          {comments.map((comment) => (
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              onReply={() => {}}
+              onLike={handleLike}
+              fetchComments={fetchComments}
+            />
+          ))}
         </div>
       </div>
     </Card>

@@ -320,7 +320,7 @@ export default function ClientComponent({
                   width={width}
                   itemCount={blogs.length}
                   itemSize={getItemSize}
-                  estimatedItemSize={300} //提供列表项的预估高度
+                  estimatedItemSize={300}
                 >
                   {BlogRow}
                 </List>

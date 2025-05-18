@@ -52,7 +52,7 @@ const EmojiButton = () => {
   );
 };
 
-export default function CommentEditor({ onCommentSubmit }) {
+export default function CommentEditor({ onCommentSubmit, parentId = null }) {
   const [editorContent, setEditorContent] = useState("");
   const { user } = useUserStore();
   const comment = {
@@ -60,6 +60,7 @@ export default function CommentEditor({ onCommentSubmit }) {
     avatarUrl: user?.avatarUrl,
     username: user?.username,
     content: editorContent,
+    parentId, // 新增
   };
 
   const submit = async () => {

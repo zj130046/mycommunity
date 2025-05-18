@@ -5,7 +5,7 @@ export default function useDebounce<T extends (...args: any[]) => void>(
   delay: number
 ): T {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
+  //useRef 创建的对象在组件的整个生命周期内保持引用不变
   const debouncedFunc = (...args: Parameters<T>) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
