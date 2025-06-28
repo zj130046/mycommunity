@@ -52,7 +52,13 @@ const EmojiButton = () => {
   );
 };
 
-export default function CommentEditor({ onCommentSubmit, parentId = null }) {
+export default function CommentEditor({
+  onCommentSubmit,
+  parentId = null,
+}: {
+  onCommentSubmit: () => void;
+  parentId?: number | null;
+}) {
   const [editorContent, setEditorContent] = useState("");
   const { user } = useUserStore();
   const comment = {
@@ -100,6 +106,8 @@ export default function CommentEditor({ onCommentSubmit, parentId = null }) {
         contentEditable={
           <ContentEditable className="border p-2 rounded-md w-full" />
         }
+        placeholder={null}
+        ErrorBoundary={() => <div>Something went wrong!</div>}
       />
       <div className="flex justify-between">
         <EmojiButton />

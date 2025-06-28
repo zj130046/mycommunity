@@ -14,6 +14,11 @@ export default function MyEditor(props: IRichTextProps) {
   const { defaultContent = "", placeholder = "请输入内容", onChange } = props;
   const [editor, setEditor] = useState<IDomEditor | null>(null);
   const [html, setHtml] = useState(defaultContent);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     setHtml(defaultContent); // 每次父组件传递新内容时，更新本地html状态
@@ -38,6 +43,12 @@ export default function MyEditor(props: IRichTextProps) {
       onChange(h);
     }
   };
+
+  if (!isClient) {
+    return (
+      <div className="min-h-[150px] border border-gray-300 p-2">加载中...</div>
+    );
+  }
 
   return (
     <div style={{ zIndex: 100 }}>

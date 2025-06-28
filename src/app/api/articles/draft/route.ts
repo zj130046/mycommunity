@@ -1,6 +1,6 @@
 import pool from "@/lib/db"; // 引入数据库连接池
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken"; // 引入 JWT 库
+import jwt, { JwtPayload } from "jsonwebtoken"; // 引入 JWT 库和类型
 
 function generateSlug(title: string): string {
   const slug = title
@@ -25,7 +25,7 @@ function getUserIdFromRequest(request: Request): number | null {
     if (!secret) {
       throw new Error("JWT_SECRET is not defined");
     }
-    const decoded = jwt.verify(token, secret);
+    const decoded = jwt.verify(token, secret) as JwtPayload;
     return decoded.userId;
   } catch (error) {
     console.error("JWT 验证失败:", error);

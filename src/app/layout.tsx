@@ -14,7 +14,7 @@ import useSearchStore from "./store/searchStore";
 import useUserStore from "./store/userStore";
 import { Button, useDisclosure, Input } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { handleLoginSubmit, handleRegisterSubmit } from "./utils/page";
+import { handleLoginSubmit, handleRegisterSubmit } from "./utils";
 import Head from "next/head";
 import useDebounce from "./hooks/useDebounce";
 

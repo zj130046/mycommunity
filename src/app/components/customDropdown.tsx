@@ -37,8 +37,11 @@ const Dropdown = () => {
     setIsOpen(false);
   };
 
-  const targetRef = React.useRef(null);
-  const { moveProps } = useDraggable({ targetRef, isDisabled: !isModalOpen });
+  const targetRef = React.useRef<HTMLElement>(null);
+  const { moveProps } = useDraggable({
+    targetRef: targetRef as React.RefObject<HTMLElement>,
+    isDisabled: !isModalOpen,
+  });
 
   return (
     <>

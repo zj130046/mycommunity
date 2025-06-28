@@ -1,3 +1,5 @@
+import React from "react";
+
 export const tags = [
   "JS",
   "React",
@@ -47,6 +49,8 @@ export interface Blog {
   slug: string;
   img: string;
   like_count: number;
+  liked?: boolean;
+  comment_count?: number;
 }
 
 export interface Comment {
@@ -57,6 +61,7 @@ export interface Comment {
   username: string;
   created_at: string;
   like_count: number;
+  children?: Comment[];
 }
 
 export interface NewComment {
@@ -154,7 +159,7 @@ export const emojiList = [
   "😈",
 ];
 
-export const EyeSlashFilledIcon = (props) => {
+export const EyeSlashFilledIcon = (props: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       aria-hidden="true"
@@ -190,7 +195,7 @@ export const EyeSlashFilledIcon = (props) => {
   );
 };
 
-export const EyeFilledIcon = (props) => {
+export const EyeFilledIcon = (props: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       aria-hidden="true"

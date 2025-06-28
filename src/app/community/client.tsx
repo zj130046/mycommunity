@@ -17,10 +17,10 @@ import { PiUserCirclePlus } from "react-icons/pi";
 import dayjs from "dayjs";
 import DOMPurify from "dompurify";
 import Link from "next/link";
-import { handleLoginSubmit, handleRegisterSubmit } from "../utils/page";
+import { handleLoginSubmit, handleRegisterSubmit } from "../utils";
 import { Blog } from "../store/message";
 import { BiMessageDetail, BiLike } from "react-icons/bi";
-import { uploadFile } from "../utils/page";
+import { uploadFile } from "../utils";
 import useDebounce from "../hooks/useDebounce";
 import { VariableSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -51,7 +51,7 @@ export default function ClientComponent({
   const { user, login, token } = useUserStore();
   const [content, setContent] = useState("");
   const [img, setImg] = useState("");
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
   const [blogs, setBlogs] = useState<Blog[]>(initialBlogs);
   const listRef = useRef<List>(null);
 
@@ -84,12 +84,12 @@ export default function ClientComponent({
     }
   }, [blogs]);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFile(file);
-      setImg(URL.createObjectURL(file));
-    }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    setFile(file);
+    setImg(URL.createObjectURL(file));
   };
 
   const handleSubmit = async () => {
@@ -135,7 +135,7 @@ export default function ClientComponent({
 
   const debouncedHandleSubmit = useDebounce(handleSubmit, 500);
 
-  const handleLike = async (id) => {
+  const handleLike = async (id: number) => {
     try {
       const response = await fetch(`/api/blog/like/${id}`, {
         method: "POST",

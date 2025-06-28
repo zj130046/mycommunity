@@ -9,7 +9,7 @@ import { LiaCommentsSolid } from "react-icons/lia";
 import { MdLogin } from "react-icons/md";
 import { PiUserCirclePlus } from "react-icons/pi";
 import useUserStore from "../store/userStore";
-import { handleLoginSubmit, handleRegisterSubmit } from "../utils/page";
+import { handleLoginSubmit, handleRegisterSubmit } from "../utils";
 
 export default function MessageCard() {
   const {

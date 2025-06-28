@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Head from "next/head";
@@ -24,22 +24,22 @@ export default function Carousel({ articles }: CarouselProps) {
     }
   }, [articles]);
 
+  const nextSlide = useCallback(() => {
+    if (activeIndex >= articlesLatest.length - 1) return;
+    setActiveIndex((prevIndex) => prevIndex + 1);
+    setIsTransitioning(true);
+  }, [activeIndex, articlesLatest.length]);
+
   useEffect(() => {
     const timerId = setInterval(() => {
       nextSlide();
     }, 3000);
     return () => clearInterval(timerId);
-  }, [articlesLatest.length]);
+  }, [nextSlide]);
 
   const prevSlide = () => {
     if (activeIndex <= 0) return;
     setActiveIndex((prevIndex) => prevIndex - 1);
-    setIsTransitioning(true);
-  };
-
-  const nextSlide = () => {
-    if (activeIndex >= articlesLatest.length - 1) return;
-    setActiveIndex((prevIndex) => prevIndex + 1);
     setIsTransitioning(true);
   };
 

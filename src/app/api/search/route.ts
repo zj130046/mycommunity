@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import pool from "../../../lib/db";
 
-export async function POST(request) {
+export async function POST(request: Request) {
   try {
     // 从请求体中获取搜索关键字
     const { keyword } = await request.json();

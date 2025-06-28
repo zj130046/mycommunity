@@ -16,7 +16,7 @@ const BlogDetails = () => {
   const { slug } = useParams();
 
   const { data } = useFetchDetailData<Blog>(`/api/blog/all/${slug}`);
-  const handleLike = async (id) => {
+  const handleLike = async (id: number) => {
     try {
       const response = await fetch(`/api/blog/like/${id}`, {
         method: "POST",

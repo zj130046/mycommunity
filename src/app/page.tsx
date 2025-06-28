@@ -3,8 +3,14 @@ import Category from "./category/page";
 import Head from "next/head";
 import { Article } from "./store/message";
 
+// 让页面在运行时动态生成，避免构建时的 fetch 错误
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
-  const res = await fetch("http://localhost:3000/api/articles/latest");
+  // 在服务器端渲染时使用完整的 URL
+  const baseUrl = "http://localhost:3000";
+
+  const res = await fetch(`${baseUrl}/api/articles/latest`);
   const articles: Article[] = await res.json();
   return (
     <div>

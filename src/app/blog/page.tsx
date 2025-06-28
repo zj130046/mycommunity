@@ -8,13 +8,13 @@ import { IoMdPaperPlane } from "react-icons/io";
 import { MdOutlineDataSaverOff, MdLogin } from "react-icons/md";
 import { IoPricetagOutline } from "react-icons/io5";
 import { HiOutlineDocumentDuplicate } from "react-icons/hi2";
-import MyEditor from "@/app/components/editor";
 import { useState, useEffect, lazy, Suspense } from "react";
 import Image from "next/image";
 import { categories } from "../store/message";
-import { handleLoginSubmit, handleRegisterSubmit } from "../utils/page";
-import { uploadFile } from "../utils/page";
+import { handleLoginSubmit, handleRegisterSubmit } from "../utils";
+import { uploadFile } from "../utils";
 
+const MyEditor = lazy(() => import("@/app/components/editor"));
 const LoginModal = lazy(() => import("../components/LoginModal"));
 const RegisterModal = lazy(() => import("../components/RegisterModal"));
 
@@ -37,14 +37,14 @@ export default function About() {
   const [category, setCategory] = useState("");
   const [tag, setTag] = useState("");
   const [img, setImg] = useState("");
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFile(file);
-      setImg(URL.createObjectURL(file)); // 预览图片
-    }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    setFile(file);
+    setImg(URL.createObjectURL(file)); // 预览图片
   };
 
   const handleSubmit = async () => {
@@ -52,11 +52,12 @@ export default function About() {
 
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
+    if (file && file.size > MAX_FILE_SIZE) {
+      alert("文件大小不能超过 5MB，请选择更小的文件。");
+      return;
+    }
+
     if (file) {
-      if (file.size > MAX_FILE_SIZE) {
-        alert("文件大小不能超过 5MB，请选择更小的文件。");
-        return;
-      }
       imageUrl = await uploadFile(file);
       if (!imageUrl) return;
     }
@@ -122,11 +123,11 @@ export default function About() {
     let imageUrl = img; // 使用当前图片 URL
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
+    if (file && file.size > MAX_FILE_SIZE) {
+      alert("文件大小不能超过 5MB，请选择更小的文件。");
+      return;
+    }
     if (file) {
-      if (file.size > MAX_FILE_SIZE) {
-        alert("文件大小不能超过 5MB，请选择更小的文件。");
-        return;
-      }
       imageUrl = await uploadFile(file);
       if (!imageUrl) return;
     }
@@ -299,7 +300,9 @@ export default function About() {
             label="分类"
             placeholder="请选择分类"
             selectedKeys={[category]}
-            onSelectionChange={(keys) => setCategory(Array.from(keys)[0])}
+            onSelectionChange={(keys) =>
+              setCategory(String(Array.from(keys)[0] || ""))
+            }
             startContent={<HiOutlineDocumentDuplicate />}
             scrollShadowProps={{
               isEnabled: false,

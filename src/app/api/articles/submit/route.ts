@@ -1,6 +1,6 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 function generateSlug(title: string): string {
   const slug = title
@@ -24,7 +24,7 @@ function getUserIdFromRequest(request: Request): number | null {
     if (!secret) {
       throw new Error("JWT_SECRET is not defined");
     }
-    const decoded = jwt.verify(token, secret);
+    const decoded = jwt.verify(token, secret) as JwtPayload;
     return decoded.userId;
   } catch (error) {
     console.error("JWT 验证失败:", error);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import pool from "../../../../lib/db";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { put } from "@vercel/blob"; // 导入 Vercel Blob 的 put 方法
 
 // 获取 JWT 密钥
@@ -19,8 +19,8 @@ export async function POST(request: NextRequest) {
     }
 
     // 验证 JWT 令牌
-    const decoded = jwt.verify(token, JWT_SECRET!);
-    const userId = (decoded as { userId: string }).userId;
+    const decoded = jwt.verify(token, JWT_SECRET!) as JwtPayload;
+    const userId = decoded.userId;
 
     // 获取上传的文件
     const formData = await request.formData();

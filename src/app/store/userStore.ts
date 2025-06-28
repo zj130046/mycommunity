@@ -28,7 +28,9 @@ const useUserStore = create<UserState>()(
       logout: () => {
         set({ user: null, token: null });
         const storage = createJSONStorage(() => localStorage); // 改为 localStorage
-        storage.removeItem("user-storage");
+        if (storage) {
+          storage.removeItem("user-storage");
+        }
       },
     }),
     {

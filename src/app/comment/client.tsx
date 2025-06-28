@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, useEffect, useState, Suspense } from "react";
+import { lazy, useEffect, useState, Suspense, useCallback } from "react";
 import { useDisclosure } from "@heroui/react";
 import { Button, Card } from "@heroui/react";
 import { MdLogin } from "react-icons/md";
@@ -10,7 +10,7 @@ import { PiUserCirclePlus } from "react-icons/pi";
 import CommentEditor from "../components/commentEditor";
 import dayjs from "dayjs";
 import { Comment } from "../store/message";
-import { handleLoginSubmit, handleRegisterSubmit } from "../utils/page";
+import { handleLoginSubmit, handleRegisterSubmit } from "../utils";
 
 const LoginModal = lazy(() => import("../components/LoginModal"));
 const RegisterModal = lazy(() => import("../components/RegisterModal"));
@@ -19,7 +19,15 @@ interface ClientComponentProps {
   initialComments: Comment[];
 }
 
-function CommentItem({ comment, onLike, fetchComments }) {
+function CommentItem({
+  comment,
+  onLike,
+  fetchComments,
+}: {
+  comment: Comment;
+  onLike: (id: number) => void;
+  fetchComments: () => void;
+}) {
   const [showReply, setShowReply] = useState(false);
   return (
     <div className="mb-2 pl-4 border-l">
@@ -101,7 +109,7 @@ export default function ClientComponent({
     onOpenChange: onRegisterOpenChange,
   } = useDisclosure();
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       const res = await fetch("/api/comments");
       if (!res.ok) throw new Error("获取评论失败");
@@ -110,35 +118,38 @@ export default function ClientComponent({
     } catch (error) {
       console.error("Failed to fetch comments:", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchComments();
-  }, []);
+  }, [fetchComments]);
 
-  const handleLike = async (commentId: number) => {
-    if (!user) {
-      onLoginOpen();
-      setPendingLike(commentId);
-      return;
-    }
-
-    try {
-      const res = await fetch(`/api/comments/like/${commentId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.userId }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.message || "点赞失败");
+  const handleLike = useCallback(
+    async (commentId: number) => {
+      if (!user) {
+        onLoginOpen();
+        setPendingLike(commentId);
         return;
       }
-      fetchComments();
-    } catch (e) {
-      alert("点赞失败");
-    }
-  };
+
+      try {
+        const res = await fetch(`/api/comments/like/${commentId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: user.userId }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.message || "点赞失败");
+          return;
+        }
+        fetchComments();
+      } catch {
+        alert("点赞失败");
+      }
+    },
+    [user, onLoginOpen, fetchComments]
+  );
 
   // 登录后自动点赞
   useEffect(() => {
@@ -146,7 +157,7 @@ export default function ClientComponent({
       handleLike(pendingLike);
       setPendingLike(null);
     }
-  }, [user]);
+  }, [user, pendingLike, handleLike]);
 
   const loginCard = (
     <Card className="w-full shadow-lg h-[180px] mb-[20px] bg-[#74747414] dark:bg-gray-900 p-[22px]">

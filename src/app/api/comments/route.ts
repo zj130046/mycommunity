@@ -1,14 +1,26 @@
 import { NextResponse } from "next/server";
 import pool from "../../../lib/db";
 
+// 定义评论接口
+interface Comment {
+  id: number;
+  parent_id?: number;
+  content: string;
+  user_id: number;
+  username: string;
+  avatar_url?: string;
+  created_at: string;
+  children?: Comment[];
+}
+
 // 辅助函数：将平铺的评论数组转为树形结构
-function buildCommentTree(comments) {
-  const map = {};
-  const roots = [];
+function buildCommentTree(comments: Comment[]): Comment[] {
+  const map: { [key: number]: Comment } = {};
+  const roots: Comment[] = [];
   comments.forEach((c) => (map[c.id] = { ...c, children: [] }));
   comments.forEach((c) => {
     if (c.parent_id) {
-      map[c.parent_id]?.children.push(map[c.id]);
+      map[c.parent_id]?.children?.push(map[c.id]);
     } else {
       roots.push(map[c.id]);
     }

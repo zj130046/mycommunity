@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-export default function useDebounce<T extends (...args: any[]) => void>(
+export default function useDebounce<T extends (...args: unknown[]) => void>(
   func: T,
   delay: number
 ): T {

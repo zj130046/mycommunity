@@ -42,7 +42,7 @@ const SearchDetails = () => {
           selectedKey={selected}
           color="danger"
           radius="full"
-          onSelectionChange={(e: string) => setSelected(e)}
+          onSelectionChange={(e) => setSelected(String(e))}
         >
           <Tab key="帖子" title="帖子">
             {Array.isArray(blogs) && blogs.length > 0

@@ -1,8 +1,14 @@
 import Head from "next/head";
 import ClientComponent from "./client";
 
+// 让页面在运行时动态生成，避免构建时的 fetch 错误
+export const dynamic = "force-dynamic";
+
 const fetchComments = async () => {
-  const res = await fetch("http://localhost:3000/api/comments");
+  // 在服务器端渲染时使用完整的 URL
+  const baseUrl = "http://localhost:3000";
+
+  const res = await fetch(`${baseUrl}/api/comments`);
   if (!res.ok) throw new Error("Failed to fetch comments");
   return res.json();
 };
