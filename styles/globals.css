@@ -39,6 +39,14 @@
 body {
   height: 100%;
   overflow: auto;
+  background-image: url("https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1740743169056-33-f95LeDXuMCInd3j2GUDikDVS8SKnSr.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+html.dark body {
+  background-image: url("https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1740742258091-29-vpkdTPOfChn387WPoUKQI6Q2cq3Wi4.png");
 }
 
 body {

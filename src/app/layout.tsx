@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { handleLoginSubmit, handleRegisterSubmit } from "./utils";
 import Head from "next/head";
 import useDebounce from "./hooks/useDebounce";
+import AIChatWidget from "./components/AIChatWidget";
 
 const LoginModal = lazy(() => import("./components/LoginModal"));
 const RegisterModal = lazy(() => import("./components/RegisterModal"));
@@ -45,6 +46,22 @@ export default function RootLayout({
   const [keyword, setKeyword] = useState("");
   const router = useRouter();
 
+  // 初始化 darkMode
+  useEffect(() => {
+    const saved = localStorage.getItem("darkMode");
+    if (saved !== null) setDarkMode(saved === "true");
+  }, []);
+
+  // 切换 dark class
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("darkMode", darkMode + "");
+  }, [darkMode]);
+
   const toggleDarkMode = () => {
     setDarkMode((prevMode) => !prevMode);
   };
@@ -60,25 +77,10 @@ export default function RootLayout({
 
   const debouncedHandleSearch = useDebounce(handleSearch, 500);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      document.documentElement.setAttribute(
-        "data-theme",
-        darkMode ? "dark" : "light"
-      );
-      const bodyElement = document.body;
-      if (darkMode) {
-        bodyElement.style.backgroundImage =
-          'url("https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1740742258091-29-vpkdTPOfChn387WPoUKQI6Q2cq3Wi4.png")';
-      } else {
-        bodyElement.style.backgroundImage =
-          'url("https://irc7idfkyhk1igoi.public.blob.vercel-storage.com/uploads/1740743169056-33-f95LeDXuMCInd3j2GUDikDVS8SKnSr.jpg")';
-      }
-    }
-  }, [darkMode]);
+  // 移除 useEffect 里设置 data-theme 和 body 背景图片的代码
 
   return (
-    <html lang="zh" data-theme={darkMode ? "dark" : "light"}>
+    <html lang="zh">
       <Head>
         <meta name="description" content="这是悠哉社区，欢迎大家使用！" />
         <title>悠哉社区</title>
@@ -116,9 +118,11 @@ export default function RootLayout({
             <Input
               autoComplete="off"
               value={keyword}
-              onChange={(e) => {
-                setKeyword(e.target.value);
-                debouncedHandleSearch();
+              onChange={(e) => setKeyword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  debouncedHandleSearch();
+                }
               }}
               endContent={
                 <IoIosSearch
@@ -212,6 +216,7 @@ export default function RootLayout({
           <GoChevronDown className="text-2xl" />
         </div>
         <div className="bg-[#FFF] h-[280px]"></div>
+        <AIChatWidget />
       </body>
     </html>
   );

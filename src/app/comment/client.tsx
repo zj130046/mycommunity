@@ -1,6 +1,13 @@
 "use client";
 
-import { lazy, useEffect, useState, Suspense, useCallback } from "react";
+import {
+  lazy,
+  useEffect,
+  useState,
+  Suspense,
+  useCallback,
+  useRef,
+} from "react";
 import { useDisclosure } from "@heroui/react";
 import { Button, Card } from "@heroui/react";
 import { MdLogin } from "react-icons/md";
@@ -23,14 +30,17 @@ function CommentItem({
   comment,
   onLike,
   fetchComments,
+  notifyWS,
 }: {
   comment: Comment;
   onLike: (id: number) => void;
   fetchComments: () => void;
+  notifyWS: () => void;
 }) {
   const [showReply, setShowReply] = useState(false);
+  const [showChildren, setShowChildren] = useState(true); // 新增：控制子评论显示
   return (
-    <div className="mb-2 pl-4 border-l">
+    <div className="mb-2 pl-4">
       <div className="flex items-start">
         <Image
           src={
@@ -72,19 +82,30 @@ function CommentItem({
           onCommentSubmit={() => {
             fetchComments();
             setShowReply(false);
+            notifyWS(); // 新增
           }}
         />
       )}
       {comment.children && comment.children.length > 0 && (
         <div className="ml-4">
-          {comment.children.map((child) => (
-            <CommentItem
-              key={child.id}
-              comment={child}
-              onLike={onLike}
-              fetchComments={fetchComments}
-            />
-          ))}
+          <span
+            className="cursor-pointer text-blue-400 text-xs"
+            onClick={() => setShowChildren((v) => !v)}
+          >
+            {showChildren
+              ? "收起子评论"
+              : `展开子评论（${comment.children.length}）`}
+          </span>
+          {showChildren &&
+            comment.children.map((child) => (
+              <CommentItem
+                key={child.id}
+                comment={child}
+                onLike={onLike}
+                fetchComments={fetchComments}
+                notifyWS={notifyWS}
+              />
+            ))}
         </div>
       )}
     </div>
@@ -97,6 +118,7 @@ export default function ClientComponent({
   const { user, login } = useUserStore();
   const [comments, setComments] = useState<Comment[]>(initialComments);
   const [pendingLike, setPendingLike] = useState<number | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
 
   const {
     isOpen: isLoginOpen,
@@ -119,6 +141,25 @@ export default function ClientComponent({
       console.error("Failed to fetch comments:", error);
     }
   }, []);
+
+  // WebSocket连接
+  useEffect(() => {
+    const ws = new WebSocket("ws://localhost:3001");
+    wsRef.current = ws;
+    ws.onmessage = () => {
+      fetchComments();
+    };
+    return () => {
+      ws.close();
+    };
+  }, [fetchComments]);
+
+  // 通知WebSocket服务端
+  const notifyWS = () => {
+    if (wsRef.current && wsRef.current.readyState === 1) {
+      wsRef.current.send("update");
+    }
+  };
 
   useEffect(() => {
     fetchComments();
@@ -144,6 +185,7 @@ export default function ClientComponent({
           return;
         }
         fetchComments();
+        notifyWS(); // 新增
       } catch {
         alert("点赞失败");
       }
@@ -236,6 +278,7 @@ export default function ClientComponent({
               comment={comment}
               onLike={handleLike}
               fetchComments={fetchComments}
+              notifyWS={notifyWS}
             />
           ))}
         </div>
