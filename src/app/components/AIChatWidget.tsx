@@ -18,31 +18,66 @@ const AIChatWidget: React.FC = () => {
     }
   }, [messages, open]);
 
-  // 发送消息（后续可接API）
-  const sendMessage = async () => {
+  // 流式发送消息
+  const sendMessageStream = async () => {
     if (!input.trim()) return;
     const userMsg = { role: "user", content: input };
     const newMsgs = [...messages, userMsg];
     setMessages(newMsgs);
     setInput("");
 
-    try {
-      const res = await fetch("/api/ai-chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: newMsgs }),
-      });
-      const data = await res.json();
-      setMessages((msgs) => [
-        ...msgs,
-        { role: "ai", content: data.reply || "AI未能回复，请稍后再试。" },
-      ]);
-    } catch (e) {
-      console.error(e);
+    const res = await fetch("/api/ai-chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "text/event-stream",
+      },
+      body: JSON.stringify({ messages: newMsgs }),
+    });
+
+    if (!res.body) {
       setMessages((msgs) => [
         ...msgs,
         { role: "ai", content: "AI服务异常，请稍后再试。" },
       ]);
+      return;
+    }
+
+    const reader = res.body.getReader();
+    let aiMsg = "";
+    // 先插入一个空的 ai 消息
+    setMessages((msgs) => [...msgs, { role: "ai", content: "" }]);
+
+    const decoder = new TextDecoder("utf-8");
+    let done = false;
+    while (!done) {
+      const { value, done: doneReading } = await reader.read();
+      done = doneReading;
+      if (value) {
+        const chunk = decoder.decode(value);
+        // 解析 deepseek SSE 格式
+        chunk.split("\n").forEach((line) => {
+          if (line.startsWith("data: ")) {
+            const data = line.replace("data: ", "").trim();
+            if (!data || data === "[DONE]") return;
+            try {
+              const json = JSON.parse(data);
+              const delta = json.choices?.[0]?.delta?.content || "";
+              aiMsg += delta;
+              setMessages((msgs) => {
+                // 更新最后一条 ai 消息
+                const last = msgs[msgs.length - 1];
+                if (last.role === "ai") {
+                  return [...msgs.slice(0, -1), { ...last, content: aiMsg }];
+                }
+                return msgs;
+              });
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        });
+      }
     }
   };
 
@@ -99,12 +134,12 @@ const AIChatWidget: React.FC = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") sendMessage();
+                if (e.key === "Enter") sendMessageStream();
               }}
             />
             <button
               className="p-2 rounded-full bg-gradient-to-tr from-pink-500 to-yellow-500 text-white hover:scale-110 transition-transform"
-              onClick={sendMessage}
+              onClick={sendMessageStream}
               aria-label="发送"
             >
               <FaPaperPlane />
