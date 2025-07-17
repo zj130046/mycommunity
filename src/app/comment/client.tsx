@@ -16,8 +16,15 @@ import Image from "next/image";
 import { PiUserCirclePlus } from "react-icons/pi";
 import CommentEditor from "../components/commentEditor";
 import dayjs from "dayjs";
-import { Comment } from "../store/message";
+import { Comment as MessageComment } from "../store/message";
 import { handleLoginSubmit, handleRegisterSubmit } from "../utils";
+
+// 扩展Comment类型，增加parent_id和reply_to属性
+interface Comment extends MessageComment {
+  parent_id?: number | null;
+  reply_to?: number | null;
+  children?: Comment[];
+}
 
 const LoginModal = lazy(() => import("../components/LoginModal"));
 const RegisterModal = lazy(() => import("../components/RegisterModal"));
@@ -28,19 +35,29 @@ interface ClientComponentProps {
 
 function CommentItem({
   comment,
+  allComments,
   onLike,
   fetchComments,
   notifyWS,
 }: {
   comment: Comment;
+  allComments: Comment[];
   onLike: (id: number) => void;
   fetchComments: () => void;
   notifyWS: () => void;
 }) {
   const [showReply, setShowReply] = useState(false);
-  const [showChildren, setShowChildren] = useState(true); // 新增：控制子评论显示
+  // 获取被回复对象
+  let replyToUser = "";
+  if (comment.reply_to && comment.reply_to !== comment.parent_id) {
+    const target = allComments.find((c) => c.id === comment.reply_to);
+    if (target) replyToUser = target.username;
+  }
+  // 计算parentId和replyTo
+  const parentId = comment.parent_id ? comment.parent_id : comment.id;
+  const replyTo = comment.id;
   return (
-    <div className="mb-2 pl-4">
+    <div className="mb-2">
       <div className="flex items-start">
         <Image
           src={
@@ -55,6 +72,11 @@ function CommentItem({
         <div>
           <p className="text-[15px] mb-[3px]">{comment.username}</p>
           <p className="text-[14px] mb-[8px] text-[#4E5358]">
+            {replyToUser ? (
+              <span className="text-blue-500">
+                {comment.username} 回复 {replyToUser}：
+              </span>
+            ) : null}
             {comment.content}
           </p>
           <p className="text-[14px] text-[#999999]">
@@ -78,35 +100,14 @@ function CommentItem({
       </div>
       {showReply && (
         <CommentEditor
-          parentId={comment.id}
+          parentId={parentId}
+          replyTo={replyTo}
           onCommentSubmit={() => {
             fetchComments();
             setShowReply(false);
-            notifyWS(); // 新增
+            notifyWS();
           }}
         />
-      )}
-      {comment.children && comment.children.length > 0 && (
-        <div className="ml-4">
-          <span
-            className="cursor-pointer text-blue-400 text-xs"
-            onClick={() => setShowChildren((v) => !v)}
-          >
-            {showChildren
-              ? "收起子评论"
-              : `展开子评论（${comment.children.length}）`}
-          </span>
-          {showChildren &&
-            comment.children.map((child) => (
-              <CommentItem
-                key={child.id}
-                comment={child}
-                onLike={onLike}
-                fetchComments={fetchComments}
-                notifyWS={notifyWS}
-              />
-            ))}
-        </div>
       )}
     </div>
   );
@@ -201,6 +202,19 @@ export default function ClientComponent({
     }
   }, [user, pendingLike, handleLike]);
 
+  // 展开所有评论为flatList
+  function flatten(comments: Comment[]): Comment[] {
+    let arr: Comment[] = [];
+    comments.forEach((c) => {
+      arr.push(c);
+      if (c.children && c.children.length > 0) {
+        arr = arr.concat(flatten(c.children));
+      }
+    });
+    return arr;
+  }
+  const flatList = flatten(comments);
+
   const loginCard = (
     <Card className="w-full shadow-lg h-[180px] mb-[20px] bg-[#74747414] dark:bg-gray-900 p-[22px]">
       <div className="flex flex-col items-center">
@@ -273,13 +287,30 @@ export default function ClientComponent({
         <p className="text-[18px] text-[#1A1A1A] mb-[5px]">评论列表</p>
         <div className="w-full">
           {comments.map((comment) => (
-            <CommentItem
-              key={comment.id}
-              comment={comment}
-              onLike={handleLike}
-              fetchComments={fetchComments}
-              notifyWS={notifyWS}
-            />
+            <div key={comment.id} className="mb-2">
+              <CommentItem
+                comment={comment}
+                allComments={flatList}
+                onLike={handleLike}
+                fetchComments={fetchComments}
+                notifyWS={notifyWS}
+              />
+              {/* 子评论区，所有子评论都在同一列 */}
+              {comment.children && comment.children.length > 0 && (
+                <div className="ml-8 mt-2">
+                  {comment.children.map((child) => (
+                    <CommentItem
+                      key={child.id}
+                      comment={child}
+                      allComments={flatList}
+                      onLike={handleLike}
+                      fetchComments={fetchComments}
+                      notifyWS={notifyWS}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>
