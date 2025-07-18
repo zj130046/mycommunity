@@ -11,7 +11,7 @@ export interface IRichTextProps {
 }
 
 export default function MyEditor(props: IRichTextProps) {
-  const { defaultContent = "", placeholder = "请输入内容", onChange } = props;
+  const { defaultContent = "", onChange } = props;
   const [editor, setEditor] = useState<IDomEditor | null>(null);
   const [html, setHtml] = useState(defaultContent);
   const [isClient, setIsClient] = useState(false);
@@ -25,7 +25,25 @@ export default function MyEditor(props: IRichTextProps) {
   }, [defaultContent]);
 
   const toolbarConfig: Partial<IToolbarConfig> = {};
-  const editorConfig: Partial<IEditorConfig> = { placeholder };
+  const editorConfig: Partial<IEditorConfig> = {
+    placeholder: "请输入内容",
+    MENU_CONF: {
+      uploadImage: {
+        server: "/api/upload", // 上传接口
+        fieldName: "file", // 字段名，和后端一致
+        maxFileSize: 5 * 1024 * 1024, // 最大5M，可自定义
+        allowedFileTypes: ["image/*"], // 只允许图片类型
+        // 上传成功后插入编辑器
+        customInsert(
+          res: { url: string },
+          insertFn: (url: string, alt: string, href?: string) => void
+        ) {
+          // res 是后端返回的数据
+          insertFn(res.url, "", res.url.split("/").pop()); // 插入图片
+        },
+      },
+    },
+  };
 
   useEffect(() => {
     return () => {

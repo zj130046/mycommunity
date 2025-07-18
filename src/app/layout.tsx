@@ -192,12 +192,12 @@ export default function RootLayout({
           />
         </Suspense>
         <div
-          className="button-style bottom-[20%] dark:bg-gray-900 hover:text-pink-500"
+          className="button-style bottom-[29%] dark:bg-gray-900 hover:text-pink-500"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         >
           <GoChevronUp className="text-2xl" />
         </div>
-        <div className="button-style bottom-[15%] dark:bg-gray-900 hover:text-pink-500">
+        <div className="button-style bottom-[22%] dark:bg-gray-900 hover:text-pink-500">
           {darkMode ? (
             <FaRegMoon className="text-2xl" onClick={toggleDarkMode} />
           ) : (
@@ -205,7 +205,7 @@ export default function RootLayout({
           )}
         </div>
         <div
-          className="button-style bottom-[10%] dark:bg-gray-900 hover:text-pink-500"
+          className="button-style bottom-[15%] dark:bg-gray-900 hover:text-pink-500"
           onClick={() =>
             window.scrollTo({
               top: document.documentElement.scrollHeight,
