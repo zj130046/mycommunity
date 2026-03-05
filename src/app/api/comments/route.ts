@@ -4,12 +4,14 @@ import pool from "../../../lib/db";
 // 定义评论接口
 interface Comment {
   id: number;
-  parent_id?: number;
+  parent_id?: number | null;
+  reply_to?: number | null;
   content: string;
   user_id: number;
   username: string;
   avatar_url?: string;
   created_at: string;
+  like_count: number;
   children?: Comment[];
 }
 

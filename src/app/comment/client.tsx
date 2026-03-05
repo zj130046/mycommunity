@@ -23,6 +23,7 @@ import { handleLoginSubmit, handleRegisterSubmit } from "../utils";
 interface Comment extends MessageComment {
   parent_id?: number | null;
   reply_to?: number | null;
+  user_id?: number | null;
   children?: Comment[];
 }
 
@@ -37,14 +38,18 @@ function CommentItem({
   comment,
   allComments,
   onLike,
+  onDelete,
   fetchComments,
   notifyWS,
+  currentUserId,
 }: {
   comment: Comment;
   allComments: Comment[];
   onLike: (id: number) => void;
+  onDelete: (id: number) => void;
   fetchComments: () => void;
   notifyWS: () => void;
+  currentUserId: number | null;
 }) {
   const [showReply, setShowReply] = useState(false);
   // 获取被回复对象
@@ -56,6 +61,14 @@ function CommentItem({
   // 计算parentId和replyTo
   const parentId = comment.parent_id ? comment.parent_id : comment.id;
   const replyTo = comment.id;
+
+  const authorId =
+    comment.user_id ?? (comment as unknown as { userId?: number }).userId;
+  const canDelete =
+    typeof currentUserId === "number" &&
+    typeof authorId === "number" &&
+    currentUserId === authorId;
+
   return (
     <div className="mb-2">
       <div className="flex items-start">
@@ -97,6 +110,14 @@ function CommentItem({
         >
           👍 {comment.like_count}
         </span>
+        {canDelete && (
+          <span
+            onClick={() => onDelete(comment.id)}
+            className="ml-2 cursor-pointer text-red-500"
+          >
+            删除
+          </span>
+        )}
       </div>
       {showReply && (
         <CommentEditor
@@ -145,22 +166,140 @@ export default function ClientComponent({
 
   // WebSocket连接
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:3001");
-    wsRef.current = ws;
-    ws.onmessage = () => {
-      fetchComments();
+    let ws: WebSocket | null = null;
+    let reconnectTimer: NodeJS.Timeout | null = null;
+    let heartbeatTimer: NodeJS.Timeout | null = null;
+    let reconnectAttempts = 0;
+    const MAX_RECONNECT_ATTEMPTS = 5;
+    const RECONNECT_DELAY = 3000; // 3秒
+
+    const connectWebSocket = () => {
+      try {
+        ws = new WebSocket("ws://localhost:3001");
+        wsRef.current = ws;
+
+        ws.onopen = () => {
+          console.log("WebSocket连接已建立");
+          reconnectAttempts = 0; // 重置重连次数
+
+          // 启动心跳检测
+          heartbeatTimer = setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send("ping");
+            }
+          }, 30000); // 30秒发送一次心跳
+        };
+
+        ws.onmessage = (event) => {
+          // 忽略心跳响应
+          if (event.data === "pong") {
+            return;
+          }
+          fetchComments();
+        };
+
+        ws.onclose = (event) => {
+          console.log("WebSocket连接关闭:", event.code, event.reason);
+          clearInterval(heartbeatTimer!);
+
+          // 如果不是主动关闭，尝试重连
+          if (
+            event.code !== 1000 &&
+            reconnectAttempts < MAX_RECONNECT_ATTEMPTS
+          ) {
+            reconnectAttempts++;
+            console.log(
+              `尝试重连 (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`
+            );
+
+            reconnectTimer = setTimeout(() => {
+              connectWebSocket();
+            }, RECONNECT_DELAY * reconnectAttempts);
+          }
+        };
+
+        ws.onerror = (error) => {
+          console.error("WebSocket连接错误:", error);
+        };
+      } catch (error) {
+        console.error("创建WebSocket连接失败:", error);
+
+        // 连接失败时也尝试重连
+        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+          reconnectAttempts++;
+          reconnectTimer = setTimeout(() => {
+            connectWebSocket();
+          }, RECONNECT_DELAY * reconnectAttempts);
+        }
+      }
     };
+
+    connectWebSocket();
+
     return () => {
-      ws.close();
+      // 清理定时器
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+      }
+      if (heartbeatTimer) {
+        clearInterval(heartbeatTimer);
+      }
+
+      // 关闭WebSocket连接
+      if (ws) {
+        ws.close(1000, "组件卸载");
+      }
     };
   }, [fetchComments]);
 
   // 通知WebSocket服务端
-  const notifyWS = () => {
-    if (wsRef.current && wsRef.current.readyState === 1) {
-      wsRef.current.send("update");
+  const notifyWS = useCallback(() => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      try {
+        wsRef.current.send("update");
+      } catch (error) {
+        console.error("发送WebSocket消息失败:", error);
+        // 如果发送失败，尝试重新获取评论
+        fetchComments();
+      }
+    } else {
+      console.log("WebSocket未连接，跳过实时通知");
+      // WebSocket未连接时，仍然可以正常提交评论，只是不会实时通知其他用户
     }
-  };
+  }, [fetchComments]);
+
+  const handleDelete = useCallback(
+    async (commentId: number) => {
+      if (!user) {
+        onLoginOpen();
+        return;
+      }
+
+      const ok = window.confirm(
+        "确定要删除这条评论吗？（根评论会连同其所有回复一起删除）"
+      );
+      if (!ok) return;
+
+      try {
+        const res = await fetch(`/api/comments/delete/${commentId}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: user.userId }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.message || "删除失败");
+          return;
+        }
+        fetchComments();
+        notifyWS();
+      } catch (error) {
+        console.error(error);
+        alert("删除失败");
+      }
+    },
+    [user, onLoginOpen, fetchComments, notifyWS]
+  );
 
   useEffect(() => {
     fetchComments();
@@ -191,7 +330,7 @@ export default function ClientComponent({
         alert("点赞失败");
       }
     },
-    [user, onLoginOpen, fetchComments]
+    [user, onLoginOpen, fetchComments, notifyWS]
   );
 
   // 登录后自动点赞
@@ -292,8 +431,10 @@ export default function ClientComponent({
                 comment={comment}
                 allComments={flatList}
                 onLike={handleLike}
+                onDelete={handleDelete}
                 fetchComments={fetchComments}
                 notifyWS={notifyWS}
+                currentUserId={user?.userId ?? null}
               />
               {/* 子评论区，所有子评论都在同一列 */}
               {comment.children && comment.children.length > 0 && (
@@ -304,8 +445,10 @@ export default function ClientComponent({
                       comment={child}
                       allComments={flatList}
                       onLike={handleLike}
+                      onDelete={handleDelete}
                       fetchComments={fetchComments}
                       notifyWS={notifyWS}
+                      currentUserId={user?.userId ?? null}
                     />
                   ))}
                 </div>
