@@ -52,6 +52,9 @@ function CommentItem({
   currentUserId: number | null;
 }) {
   const [showReply, setShowReply] = useState(false);
+  const [showChildren, setShowChildren] = useState(false);
+  const hasChildren = comment.children && comment.children.length > 0;
+
   // 获取被回复对象
   let replyToUser = "";
   if (comment.reply_to && comment.reply_to !== comment.parent_id) {
@@ -104,6 +107,16 @@ function CommentItem({
         >
           回复
         </span>
+        {hasChildren && (
+          <span
+            onClick={() => setShowChildren(!showChildren)}
+            className="ml-2 cursor-pointer text-blue-500"
+          >
+            {showChildren
+              ? "收起回复"
+              : `展开回复 (${comment.children?.length})`}
+          </span>
+        )}
         <span
           onClick={() => onLike(comment.id)}
           className="ml-2 cursor-pointer"
@@ -129,6 +142,24 @@ function CommentItem({
             notifyWS();
           }}
         />
+      )}
+
+      {/* 子评论区 */}
+      {hasChildren && showChildren && (
+        <div className="ml-8 mt-2">
+          {comment.children?.map((child) => (
+            <CommentItem
+              key={child.id}
+              comment={child}
+              allComments={allComments}
+              onLike={onLike}
+              onDelete={onDelete}
+              fetchComments={fetchComments}
+              notifyWS={notifyWS}
+              currentUserId={currentUserId}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
@@ -426,34 +457,16 @@ export default function ClientComponent({
         <p className="text-[18px] text-[#1A1A1A] mb-[5px]">评论列表</p>
         <div className="w-full">
           {comments.map((comment) => (
-            <div key={comment.id} className="mb-2">
-              <CommentItem
-                comment={comment}
-                allComments={flatList}
-                onLike={handleLike}
-                onDelete={handleDelete}
-                fetchComments={fetchComments}
-                notifyWS={notifyWS}
-                currentUserId={user?.userId ?? null}
-              />
-              {/* 子评论区，所有子评论都在同一列 */}
-              {comment.children && comment.children.length > 0 && (
-                <div className="ml-8 mt-2">
-                  {comment.children.map((child) => (
-                    <CommentItem
-                      key={child.id}
-                      comment={child}
-                      allComments={flatList}
-                      onLike={handleLike}
-                      onDelete={handleDelete}
-                      fetchComments={fetchComments}
-                      notifyWS={notifyWS}
-                      currentUserId={user?.userId ?? null}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              allComments={flatList}
+              onLike={handleLike}
+              onDelete={handleDelete}
+              fetchComments={fetchComments}
+              notifyWS={notifyWS}
+              currentUserId={user?.userId ?? null}
+            />
           ))}
         </div>
       </div>
