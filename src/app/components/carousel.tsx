@@ -50,8 +50,6 @@ export default function Carousel({ articles }: CarouselProps) {
     } else if (activeIndex === 0) {
       setIsTransitioning(false);
       setActiveIndex(articlesLatest.length - 2);
-    } else {
-      setIsTransitioning(true);
     }
   };
 
@@ -89,7 +87,7 @@ export default function Carousel({ articles }: CarouselProps) {
             style={{
               transform: `translateX(-${activeIndex * 100}%)`,
             }}
-            onTransitionEnd={handleTransitionEnd} //当轮播图的 transform 动画完成后，就会触发 handleTransitionEnd。
+            onTransitionEnd={handleTransitionEnd}
           >
             {articlesLatest.map((article, index) => (
               <div
@@ -98,7 +96,7 @@ export default function Carousel({ articles }: CarouselProps) {
               >
                 <Link
                   href={`/article/${article.slug}`}
-                  className="w-full h-full"
+                  className="absolute inset-0 z-0"
                 >
                   <Image
                     width={1150}
@@ -107,40 +105,49 @@ export default function Carousel({ articles }: CarouselProps) {
                     alt={article.title}
                     className="w-full h-full object-cover"
                     quality={50}
-                    priority={index === 1} //  只优先加载首图
+                    priority={index === 1}
                   />
                 </Link>
-                <div className="absolute top-0 mt-4 ml-4">
+                <div className="absolute top-0 mt-4 ml-4 z-10">
                   <h4 className="text-white text-[30px]">{article.title}</h4>
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <div className="absolute inset-0 flex justify-center items-end px-4">
-          <ul className="flex gap-2 mb-4">
+        <div className="absolute inset-0 flex justify-center items-end px-4 z-20 pointer-events-none">
+          <ul className="flex gap-2 mb-4 pointer-events-auto">
             {articlesLatest.slice(1, -1).map((_, index) => (
               <li
                 key={index}
                 className={`rounded-full ${
                   activeIndex === index + 1 ? "bg-yellow-500" : "bg-white"
                 } w-2 h-2 cursor-pointer`}
-                onClick={() => setActiveIndex(index + 1)}
+                onClick={() => {
+                  setActiveIndex(index + 1);
+                  setIsTransitioning(true);
+                }}
               ></li>
             ))}
           </ul>
         </div>
 
-        <div className="absolute inset-0 flex items-center justify-between px-4">
+        <div className="absolute inset-0 flex items-center justify-between px-4 z-20 pointer-events-none">
           <button
-            className="bg-white bg-opacity-25 backdrop-blur-sm text-black px-4 py-2 rounded-full hover:bg-opacity-30"
-            onClick={prevSlide}
+            className="bg-white bg-opacity-25 backdrop-blur-sm text-black px-4 py-2 rounded-full hover:bg-opacity-30 pointer-events-auto"
+            onClick={(e) => {
+              e.stopPropagation();
+              prevSlide();
+            }}
           >
             &lt;
           </button>
           <button
-            className="bg-white bg-opacity-25 backdrop-blur-sm text-black px-4 py-2 rounded-full hover:bg-opacity-30"
-            onClick={nextSlide}
+            className="bg-white bg-opacity-25 backdrop-blur-sm text-black px-4 py-2 rounded-full hover:bg-opacity-30 pointer-events-auto"
+            onClick={(e) => {
+              e.stopPropagation();
+              nextSlide();
+            }}
           >
             &gt;
           </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
@@ -63,6 +63,7 @@ export default function CommentEditor({
 }) {
   const [editorContent, setEditorContent] = useState("");
   const { user } = useUserStore();
+  const [clearEditor, setClearEditor] = useState(false);
   const comment = {
     userId: user?.userId,
     avatarUrl: user?.avatarUrl,
@@ -87,6 +88,7 @@ export default function CommentEditor({
       if (typeof onCommentSubmit === "function") {
         onCommentSubmit();
       }
+      setClearEditor(true);
       setEditorContent("");
     } catch (error) {
       console.error(error);
@@ -122,7 +124,11 @@ export default function CommentEditor({
         </Button>
       </div>
 
-      <EditorChangeListener onChange={(e) => setEditorContent(e)} />
+      <EditorChangeListener
+        onChange={(e) => setEditorContent(e)}
+        clearEditor={clearEditor}
+        onClearComplete={() => setClearEditor(false)}
+      />
     </LexicalComposer>
   );
 }
@@ -130,18 +136,33 @@ export default function CommentEditor({
 // 监听 LexicalEditor 内容变化
 const EditorChangeListener = ({
   onChange,
+  clearEditor,
+  onClearComplete,
 }: {
   onChange: (content: string) => void;
+  clearEditor: boolean;
+  onClearComplete: () => void;
 }) => {
   const [editor] = useLexicalComposerContext();
 
+  // 监听编辑器内容变化
   editor.registerUpdateListener(({ editorState }) => {
-    //监听编辑器内容变化
     editorState.read(() => {
-      const text = $getRoot().getTextContent(); //获取纯文本（不含 HTML 标签）
+      const text = $getRoot().getTextContent();
       onChange(text);
     });
   });
+
+  // 监听清空命令
+  useEffect(() => {
+    if (clearEditor) {
+      editor.update(() => {
+        const root = $getRoot();
+        root.clear();
+      });
+      onClearComplete();
+    }
+  }, [clearEditor, editor, onClearComplete]);
 
   return null;
 };
